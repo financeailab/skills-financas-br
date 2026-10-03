@@ -1,0 +1,33 @@
+name: Reportar um problema
+description: Algo não funcionou como esperado numa das ferramentas
+labels: ["problema"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Não anexe extrato nem dado real** (CNPJ, CPF, agência, conta, nome de cliente,
+        lançamento). Se precisar ilustrar o problema, use um extrato fictício (valores
+        inventados, conta de teste).
+  - type: dropdown
+    id: ferramenta
+    attributes:
+      label: Ferramenta
+      options:
+        - auditor-de-tarifas
+    validations:
+      required: true
+  - type: input
+    id: plataforma
+    attributes:
+      label: Plataforma
+      description: Claude Code, Cowork, claude.ai (zip) ou terminal; e o sistema operacional
+      placeholder: "Ex.: Claude Code no Windows 11"
+    validations:
+      required: true
+  - type: textarea
+    id: o-que-aconteceu
+    attributes:
+      label: O que aconteceu
+      description: O que você esperava e o que aconteceu de fato. Pode colar a saída do terminal (sem dado real).
+    validations:
+      required: true

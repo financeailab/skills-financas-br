@@ -1,0 +1,21 @@
+name: Pedido de melhoria
+description: Sugerir uma ferramenta nova ou uma melhoria numa existente
+labels: ["pedido"]
+body:
+  - type: dropdown
+    id: ferramenta
+    attributes:
+      label: Ferramenta
+      description: Deixe em branco se for sugestão de ferramenta nova
+      options:
+        - auditor-de-tarifas
+        - (ferramenta nova)
+    validations:
+      required: true
+  - type: textarea
+    id: pedido
+    attributes:
+      label: O que você gostaria que a ferramenta fizesse
+      description: Sem dado real (extrato, CNPJ, CPF, nome de cliente) no exemplo
+    validations:
+      required: true

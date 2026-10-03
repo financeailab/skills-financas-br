@@ -1,0 +1,15 @@
+{
+  "name": "skills-financas-br",
+  "owner": {
+    "name": "Finance AI Lab",
+    "url": "https://financeailab.com.br"
+  },
+  "description": "Ferramentas de IA grátis e abertas para a tesouraria brasileira (skills para Claude). Finance AI Lab.",
+  "plugins": [
+    {
+      "name": "auditor-de-tarifas",
+      "source": "./plugins/auditor-de-tarifas",
+      "description": "Soma as tarifas bancárias de um extrato (OFX/CSV) por banco, mês e tipo, com o IOF separado do que é tarifa de fato."
+    }
+  ]
+}

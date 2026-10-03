@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: montar um zip por plugin do marketplace.json
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import zipfile
+
+          marketplace = json.loads(pathlib.Path(".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
+          for plugin in marketplace["plugins"]:
+              nome = plugin["name"]
+              origem = pathlib.Path(f"plugins/{nome}/skills/{nome}")
+              destino = pathlib.Path(f"{nome}.zip")
+              with zipfile.ZipFile(destino, "w", zipfile.ZIP_DEFLATED) as zf:
+                  for arquivo in sorted(origem.rglob("*")):
+                      if arquivo.is_file():
+                          zf.write(arquivo, arcname=str(pathlib.Path(nome) / arquivo.relative_to(origem)))
+              print(f"{destino}: {destino.stat().st_size} bytes")
+          PY
+      - name: criar a release com os zips (tag repetida falha, sem --clobber)
+        run: gh release create "$GITHUB_REF_NAME" *.zip
+        env:
+          GH_TOKEN: ${{ github.token }}

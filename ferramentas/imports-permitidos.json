@@ -1,0 +1,36 @@
+{
+  "stdlib": [
+    "__future__",
+    "argparse",
+    "collections",
+    "csv",
+    "dataclasses",
+    "datetime",
+    "decimal",
+    "glob",
+    "html",
+    "io",
+    "itertools",
+    "json",
+    "os",
+    "pathlib",
+    "re",
+    "shutil",
+    "sys",
+    "time",
+    "unicodedata"
+  ],
+  "plugins": {
+    "auditor-de-tarifas": {
+      "terceiros": [],
+      "internos": ["scripts"]
+    },
+    "conciliacao-bancaria": {
+      "terceiros": ["openpyxl", "pdfplumber", "pypdf", "pypdfium2", "PIL", "pytesseract", "xlrd"],
+      "internos": ["ingest_extrato", "ingest_ofx", "ingest_tabular", "normalize", "posicao", "reconcile", "sheets_push"]
+    }
+  },
+  "excecoes": [
+    {"arquivo": "sheets_push.py", "funcao": "push_para_sheet", "import": "gspread"}
+  ]
+}
