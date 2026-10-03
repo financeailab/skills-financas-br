@@ -22,10 +22,12 @@ Cada ferramenta tem um README próprio com o passo a passo por plataforma. Resum
 - **Claude Code**: `/plugin marketplace add financeailab/skills-financas-br`, depois
   `/plugin install <nome-da-ferramenta>@skills-financas-br`.
 - **claude.ai** (sem Claude Code nem Cowork): baixe o `.zip` da ferramenta na
-  [última release](../../releases/latest) e suba em Customize › Skills › Upload custom skill.
-- **Terminal**: baixe o repositório e rode o script Python da ferramenta diretamente.
+  [última release](https://github.com/financeailab/skills-financas-br/releases/latest) e suba em Customize › Skills › Upload custom skill.
+- **Terminal**: baixe o repositório e rode o script Python da ferramenta diretamente
+  (Python 3.12 ou mais, sem dependência).
 
-Detalhes, requisitos e limites de cada ferramenta estão no README do plugin dela.
+Detalhes, requisitos e limites de cada ferramenta estão no README do plugin dela, por exemplo o
+do [Auditor de Tarifas](plugins/auditor-de-tarifas/README.md).
 
 ## Privacidade, por plataforma
 
@@ -44,7 +46,7 @@ e classifica, a decisão final é sua ou do profissional contábil/financeiro re
 
 ## Reportar um problema ou pedir uma ferramenta
 
-Abra uma [issue](../../issues/new/choose). **Não anexe extrato nem dado real** (CNPJ, CPF,
+Abra uma [issue](https://github.com/financeailab/skills-financas-br/issues/new/choose). **Não anexe extrato nem dado real** (CNPJ, CPF,
 agência, conta, nome de cliente, lançamento); se precisar ilustrar o problema, use um extrato
 fictício.
 
