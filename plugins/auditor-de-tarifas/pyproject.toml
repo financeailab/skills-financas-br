@@ -1,0 +1,13 @@
+[project]
+name = "auditor-tarifas"
+version = "0.1.0"
+description = "Auditor de tarifas bancarias BR (OFX/CSV -> total anual de tarifa, IOF a parte). Motor local (dado-local)."
+requires-python = ">=3.12"
+# Runtime: so stdlib (OFX = regex sobre SGML; CSV = modulo csv). Sem deps pesadas nesta fase (F1).
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
