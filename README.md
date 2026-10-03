@@ -2,7 +2,7 @@
 
 Ferramentas de IA grátis e abertas para a tesouraria brasileira, publicadas como skills para
 Claude. Um repositório, uma ferramenta por vez: cada uma nasce testada, com o código aberto sob
-Apache-2.0, e fica aqui para sempre (o nome do plugin, depois de publicado, não muda).
+Apache-2.0, e o nome do plugin não muda depois de publicado.
 
 Mantido pelo [Finance AI Lab](https://financeailab.com.br), um hub brasileiro de IA aplicada a
 Finanças Corporativas.
@@ -24,7 +24,7 @@ Cada ferramenta tem um README próprio com o passo a passo por plataforma. Resum
 - **claude.ai** (sem Claude Code nem Cowork): baixe o `.zip` da ferramenta na
   [última release](https://github.com/financeailab/skills-financas-br/releases/latest) e suba em Customize › Skills › Upload custom skill.
 - **Terminal**: baixe o repositório e rode o script Python da ferramenta diretamente
-  (Python 3.12 ou mais, sem dependência).
+  (os requisitos de cada ferramenta estão no README dela).
 
 Detalhes, requisitos e limites de cada ferramenta estão no README do plugin dela, por exemplo o
 do [Auditor de Tarifas](plugins/auditor-de-tarifas/README.md).
