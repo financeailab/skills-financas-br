@@ -14,7 +14,7 @@ from datetime import date
 from decimal import Decimal
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ENGINE = os.path.join(os.path.dirname(HERE), "scripts", "engine")
+ENGINE = os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts", "engine")
 sys.path.insert(0, ENGINE)
 
 from reconcile import match_banco, resumo_privado          # noqa: E402

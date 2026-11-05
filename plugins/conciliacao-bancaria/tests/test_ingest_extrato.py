@@ -16,7 +16,7 @@ from datetime import date
 from decimal import Decimal
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ENGINE = os.path.join(os.path.dirname(HERE), "scripts", "engine")
+ENGINE = os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts", "engine")
 sys.path.insert(0, ENGINE)
 
 from ingest_extrato import ingest_tabular_rows, excel_serial_to_date   # noqa: E402

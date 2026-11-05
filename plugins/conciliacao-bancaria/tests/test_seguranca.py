@@ -13,7 +13,7 @@ import sys
 import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts", "engine"))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts", "engine"))
 
 import ingest_ofx       # noqa: E402
 import ingest_tabular   # noqa: E402
