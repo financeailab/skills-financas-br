@@ -72,6 +72,10 @@ def test_por_mes_agrega_janeiro_e_fevereiro(tmp_path):
 def test_veredicto_conferir_quando_ha_nao_classificados(tmp_path):
     resumo = agregar(_carrega_txns(tmp_path), ano=2025)
     assert resumo.veredicto == "CONFERIR"
+    # nao-classificado netado a zero pelo estorno continua pedindo conferencia
+    zerado = agregar([_txn("TAR XPTO", "-10.00"), _txn("ESTORNO TAR XPTO", "10.00")])
+    assert zerado.total_tarifa_ano == Decimal("0.00")
+    assert zerado.veredicto == "CONFERIR"
 
 
 def test_veredicto_sem_tarifa_encontrada_quando_vazio():

@@ -94,6 +94,9 @@ def test_manutencao_nomes_reais_de_pacote():
     assert classifica("CONTA MAX") == "manutencao"
     assert classifica("TARIFA BANCARIA MAX") == "manutencao"
     assert classifica("TAR CTA GARANTIDA") == "manutencao"
+    # MENSALIDADE sozinha e operacao (escola, condominio): so tarifa com marcador
+    assert classifica("PIX PAGAMENTO MENSALIDADE ESCOLAR") is None
+    assert classifica("TARIFA MENSALIDADE PACOTE") == "manutencao"
 
 
 def test_boleto_descritores_reais_de_cobranca():

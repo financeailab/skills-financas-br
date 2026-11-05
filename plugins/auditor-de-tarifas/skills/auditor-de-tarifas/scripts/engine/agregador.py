@@ -45,6 +45,7 @@ def agregar(txns: list[Txn], ano: int | None = None) -> Resumo:
     por_mes: dict[str, Decimal] = {}
     por_tipo: dict[str, Decimal] = {}
     nao_classificados = 0
+    tarifas_detectadas = 0
     meses_vistos: set[str] = set()
 
     for txn in txns:
@@ -68,6 +69,7 @@ def agregar(txns: list[Txn], ano: int | None = None) -> Resumo:
             continue
 
         total_tarifa += custo
+        tarifas_detectadas += 1
         banco = txn.banco or BANCO_DESCONHECIDO
         _acumula(por_banco, banco, custo)
         _acumula(por_mes, mes, custo)
@@ -77,10 +79,10 @@ def agregar(txns: list[Txn], ano: int | None = None) -> Resumo:
 
     periodo = (min(meses_vistos), max(meses_vistos)) if meses_vistos else None
 
-    if total_tarifa == ZERO:
-        veredicto = "SEM TARIFA ENCONTRADA"
-    elif nao_classificados > 0:
+    if nao_classificados > 0:
         veredicto = "CONFERIR"
+    elif tarifas_detectadas == 0:
+        veredicto = "SEM TARIFA ENCONTRADA"
     else:
         veredicto = "OK"
 

@@ -14,13 +14,14 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.engine.agregador import agregar
-from scripts.engine.ingest import ler_extratos
+from scripts.engine.ingest import ler_extratos, listar_arquivos
 from scripts.engine.matcher import classifica
 
 
@@ -54,6 +55,12 @@ def _formata_tabela(mapa: dict, titulo: str) -> str:
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     caminhos = [Path(e) for e in args.extratos]
+
+    if args.saida:
+        destino = os.path.normcase(os.path.realpath(args.saida))
+        if any(os.path.normcase(os.path.realpath(a)) == destino for a in listar_arquivos(caminhos)):
+            print("erro: --saida aponta para um extrato de entrada; escolha outro caminho", file=sys.stderr)
+            return 2
 
     txns, avisos = ler_extratos(caminhos)
     for aviso in avisos:

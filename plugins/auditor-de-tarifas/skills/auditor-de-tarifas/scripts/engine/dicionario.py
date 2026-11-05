@@ -27,7 +27,7 @@ CATEGORIAS: dict[str, list[tuple[re.Pattern, bool]]] = {
         (re.compile(r"MANUTENCAO CC"), False),
         (re.compile(r"\bCESTA\b"), False),
         (re.compile(r"PACOTE (DE )?SERVICOS"), False),
-        (re.compile(r"MENSALIDADE"), False),
+        (re.compile(r"MENSALIDADE"), True),
         (re.compile(r"TARIFA MENSAL"), False),
         # nomes reais de pacote/conta de servico BR (nomes de servico, casam sem marcador)
         (re.compile(r"CONTA CERTA"), False),

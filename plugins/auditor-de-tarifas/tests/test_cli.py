@@ -77,3 +77,10 @@ def test_cli_rerun_com_saida_no_dir_nao_duplica(tmp_path, capsys):
     out = capsys.readouterr().out
     assert "213.80" in out
     assert "427.60" not in out  # nao duplicou
+
+    # --saida nunca pode sobrescrever um extrato de entrada (arquivo ou achado na pasta)
+    ofx_path, _ = escreve_fixtures(tmp_path)
+    antes = Path(ofx_path).read_bytes()
+    assert main([str(ofx_path), "--saida", str(ofx_path)]) == 2
+    assert main([str(tmp_path), "--saida", str(ofx_path)]) == 2
+    assert Path(ofx_path).read_bytes() == antes

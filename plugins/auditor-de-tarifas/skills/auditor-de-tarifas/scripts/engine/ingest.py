@@ -190,8 +190,8 @@ def _eh_saida_classificada(caminho: Path) -> bool:
     return cols == _HEADER_SAIDA
 
 
-def ler_extratos(caminhos: list[Path]) -> tuple[list[Txn], list[str]]:
-    """Le uma lista de arquivos e/ou diretorios, agregando todas as txns."""
+def listar_arquivos(caminhos: list[Path]) -> list[Path]:
+    """Expande arquivos e/ou diretorios na lista de extratos que serao lidos."""
     arquivos: list[Path] = []
     for c in caminhos:
         p = Path(c)
@@ -204,7 +204,12 @@ def ler_extratos(caminhos: list[Path]) -> tuple[list[Txn], list[str]]:
                 arquivos.append(f)
         else:
             arquivos.append(p)
+    return arquivos
 
+
+def ler_extratos(caminhos: list[Path]) -> tuple[list[Txn], list[str]]:
+    """Le uma lista de arquivos e/ou diretorios, agregando todas as txns."""
+    arquivos = listar_arquivos(caminhos)
     todas_txns: list[Txn] = []
     todos_avisos: list[str] = []
     if not arquivos:
