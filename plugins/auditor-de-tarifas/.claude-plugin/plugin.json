@@ -2,7 +2,7 @@
   "name": "auditor-de-tarifas",
   "displayName": "Auditor de Tarifas",
   "version": "0.1.0",
-  "description": "Responde quanto o banco cobrou de tarifa no ano: soma as tarifas de um extrato OFX ou CSV por banco, mês e tipo, com o IOF separado do que é tarifa de fato. Motor Python sem dependências; rodando no seu computador, o extrato não sai da máquina e o Claude lê só o resumo.",
+  "description": "Responde quanto o banco cobrou de tarifa no ano: soma as tarifas de um extrato OFX ou CSV por banco, mês e tipo, com o IOF separado do que é tarifa de fato. Motor Python sem dependências; no terminal ou no Claude Code em sessão local, o motor lê o extrato no disco e o Claude lê só o resumo.",
   "author": {
     "name": "Douglas Ferreira",
     "url": "https://www.linkedin.com/in/douglasaf98"
