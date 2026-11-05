@@ -28,15 +28,19 @@ python scripts/auditar_tarifas.py <extrato.ofx> [<extrato2.csv> ...] [--ano 2025
 ```
 
 - `--ano` filtra um ano-calendário (o total anual é o número que importa).
-- `--saida` grava um CSV local classificado, para conferir linha a linha. Ele não vai para a tela.
+- `--saida` grava um CSV local só com as linhas que ele classificou como tarifa ou IOF (data, descrição, valor, banco e tipo), para conferir linha a linha. Ele não vai para a tela.
 - A tela traz só o resumo: total anual de tarifa, tabela por banco, por mês e por tipo, o IOF à
   parte, o veredicto e quantos lançamentos ficaram para conferir.
 
 ## Privacidade
 
-Rodando no seu computador (Claude Code, Cowork ou terminal), o extrato não sai da máquina e o
-Claude lê só o resumo agregado. Numa conversa comum do Claude (web ou app), o arquivo anexado
-já está na nuvem da Anthropic. Nesse caso, anonimize o extrato ou rode no computador.
+- **Terminal**: o motor lê o extrato no seu computador e nada sai dele.
+- **Claude Code, em sessão local**: o motor também lê o extrato no disco e o Claude lê só o resumo
+  agregado que ele imprime; o seu pedido, esse resumo e qualquer arquivo que você mandar o
+  Claude abrir vão para a Anthropic.
+- **Cowork** (desde 06/10/2026, planos Pro, Max e Ultra) e **claude.ai** (web ou app): o trabalho
+  roda na nuvem da Anthropic e o extrato sobe para lá. Nesse caso, anonimize o extrato ou rode
+  no terminal ou no Claude Code em sessão local.
 
 ## Limites
 

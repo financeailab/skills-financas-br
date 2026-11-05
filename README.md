@@ -31,11 +31,14 @@ do [Auditor de Tarifas](plugins/auditor-de-tarifas/README.md).
 
 ## Privacidade, por plataforma
 
-- **Claude Code, Cowork ou terminal**: o motor roda no computador da pessoa. O arquivo que você
-  processa (extrato, planilha) não sai da sua máquina; o Claude lê só o resumo que o motor
-  imprime.
-- **claude.ai (web ou app), com o `.zip` como skill**: o arquivo que você anexa já sobe para a
-  nuvem da Anthropic antes de o motor rodar, porque a conversa inteira roda lá. Isso vale para
+- **Terminal**: o motor roda no seu computador e nada sai dele.
+- **Claude Code, em sessão local**: o motor roda no seu computador e o Claude lê só o resumo que
+  ele imprime; o seu pedido, esse resumo e qualquer arquivo que você mandar o Claude abrir vão
+  para a Anthropic.
+- **Cowork** (desde 06/10/2026, planos Pro, Max e Ultra): o trabalho roda na nuvem da Anthropic
+  e o arquivo sobe para lá.
+- **claude.ai (web ou app), com o `.zip` como skill**: o trabalho roda na nuvem da Anthropic e o
+  arquivo que você anexa sobe para lá antes de o motor rodar, porque a conversa inteira roda lá. Isso vale para
   qualquer skill de claude.ai, não é específico desta ferramenta.
 
 ## Aviso

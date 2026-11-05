@@ -4,7 +4,7 @@ description: >-
   Responde "quanto seu banco te cobrou de tarifa esse ano?". A pessoa anexa o extrato
   (OFX/CSV) e o motor Python soma as tarifas (manutenção, TED/DOC, Pix PJ, boleto,
   custódia, câmbio) por banco, mês e tipo, com o IOF separado (imposto, não tarifa).
-  Rodando no computador da pessoa (Claude Code, Cowork ou terminal), o Claude lê só o
+  Rodando no terminal ou no Claude Code em sessão local, o Claude lê só o
   resumo agregado (totais), nunca o lançamento individual. Use quando a pessoa quiser
   auditar/somar as tarifas do banco no Brasil.
 ---
@@ -21,8 +21,8 @@ Ninguém sabe quanto paga de tarifa por ano porque ela vem picada: R$12,90 de ma
 
 O que vale depende de onde a conversa roda. Diga isso à pessoa, sem prometer o que a plataforma não entrega.
 
-- **No computador da pessoa (Claude Code, Cowork ou terminal):** o extrato (OFX/CSV, valores, contrapartes) **não sai da máquina**. O motor Python classifica e soma **localmente** e grava um CSV no disco dela. Para você (Claude) sobe só o **resumo agregado** (total de tarifa, quebra por banco/mês/tipo, contagem de não-classificados). **Nenhum lançamento individual** com valor e contraparte aparece no stdout lido por você. Se a pessoa quiser ver linha a linha, oriente-a a abrir o CSV local (`--saida`).
-- **Conversa comum do Claude (web ou app):** o arquivo anexado já está na nuvem da Anthropic, e o motor roda lá. **Avise a pessoa antes de ela anexar**, em vez de dizer que nada sobe. Se o extrato tiver dado sensível, sugira rodar no computador dela (Claude Code, Cowork ou terminal) ou anonimizar o arquivo antes.
+- **No terminal ou no Claude Code em sessão local:** o motor lê o extrato no disco e você lê só o resumo agregado; não abra o arquivo bruto. O motor Python classifica e soma **localmente** e, com `--saida`, grava um CSV no disco dela só com as linhas que classificou como tarifa ou IOF. Para você (Claude) sobe só o **resumo agregado** (total de tarifa, quebra por banco/mês/tipo, contagem de não-classificados). **Nenhum lançamento individual** com valor e contraparte aparece no stdout lido por você. Se a pessoa quiser ver linha a linha, oriente-a a abrir o CSV local (`--saida`). O pedido dela, esse resumo e qualquer arquivo que você abrir vão para a Anthropic.
+- **No Cowork ou numa conversa comum do Claude (web ou app):** o arquivo está na nuvem da Anthropic: avise a pessoa antes de ela anexar ou de abrir a tarefa, em vez de dizer que nada sobe, e sugira o terminal, o Claude Code em sessão local ou anonimizar o extrato.
 
 ## O que faz (e o que não faz)
 
