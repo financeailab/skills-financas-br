@@ -53,6 +53,11 @@ CASOS_NEGATIVOS = {
     "compile_chamada": 'compile("1", "x", "exec")\n',
     "subprocess_run": 'import subprocess\nsubprocess.run(["curl"])\n',
     "os_system": 'os.system("curl x")\n',
+    "os_alias_system": 'import os as s\ns.system("curl x")\n',
+    "os_referencia_sem_chamada": 'import os\nf = os.system\n',
+    "from_os_import_system": "from os import system\n",
+    "from_os_import_system_as": "from os import system as s\n",
+    "os_alias_spawnv": 'import os as s\ns.spawnv(0, "x", [])\n',
 }
 
 

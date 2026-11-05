@@ -75,6 +75,7 @@ class _Visitor(ast.NodeVisitor):
         self.config = config
         self.achados: list[tuple[int, str]] = []
         self._pilha_funcoes: list[str] = []
+        self._os_nomes = {"os"}  # nomes que apontam para o modulo os ("import os as s")
 
     def _funcao_atual(self):
         return self._pilha_funcoes[-1] if self._pilha_funcoes else None
@@ -92,6 +93,8 @@ class _Visitor(ast.NodeVisitor):
     def visit_Import(self, node):
         for alias in node.names:
             topo = alias.name.split(".")[0]
+            if alias.name == "os" and alias.asname:
+                self._os_nomes.add(alias.asname)
             if topo not in self.allowlist and not self._excecao(topo):
                 self.achados.append((node.lineno, f"import '{alias.name}' fora da allowlist"))
         self.generic_visit(node)
@@ -103,7 +106,7 @@ class _Visitor(ast.NodeVisitor):
         topo = (node.module or "").split(".")[0]
         if topo == "os":
             for alias in node.names:
-                if _os_forbidden(alias.name):
+                if alias.name == "*" or _os_forbidden(alias.name):
                     self.achados.append(
                         (node.lineno, f"'from os import {alias.name}': chamada proibida")
                     )
@@ -119,8 +122,16 @@ class _Visitor(ast.NodeVisitor):
             base = func.value.id
             if base == "importlib":
                 self.achados.append((node.lineno, f"chamada proibida 'importlib.{func.attr}'"))
-            elif base == "os" and _os_forbidden(func.attr):
-                self.achados.append((node.lineno, f"chamada proibida 'os.{func.attr}'"))
+        self.generic_visit(node)
+
+    def visit_Attribute(self, node):
+        # pega chamada e simples referencia (f = os.system), inclusive via alias
+        if (
+            isinstance(node.value, ast.Name)
+            and node.value.id in self._os_nomes
+            and _os_forbidden(node.attr)
+        ):
+            self.achados.append((node.lineno, f"uso proibido 'os.{node.attr}'"))
         self.generic_visit(node)
 
 
