@@ -9,6 +9,7 @@ body:
       description: Deixe em branco se for sugestão de ferramenta nova
       options:
         - auditor-de-tarifas
+        - conciliacao-bancaria
         - (ferramenta nova)
     validations:
       required: true

@@ -10,6 +10,11 @@
       "name": "auditor-de-tarifas",
       "source": "./plugins/auditor-de-tarifas",
       "description": "Soma as tarifas bancárias de um extrato (OFX/CSV) por banco, mês e tipo, com o IOF separado do que é tarifa de fato."
+    },
+    {
+      "name": "conciliacao-bancaria",
+      "source": "./plugins/conciliacao-bancaria",
+      "description": "Concilia o extrato bancário (OFX, CSV, XLSX, XLS ou PDF) contra o razão do ERP, classifica os lançamentos, lista as pendências e fecha a amarração de saldo."
     }
   ]
 }
