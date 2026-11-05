@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import csv
+import os
 import sys
 from decimal import Decimal
 from pathlib import Path
@@ -83,4 +84,12 @@ def test_cli_rerun_com_saida_no_dir_nao_duplica(tmp_path, capsys):
     antes = Path(ofx_path).read_bytes()
     assert main([str(ofx_path), "--saida", str(ofx_path)]) == 2
     assert main([str(tmp_path), "--saida", str(ofx_path)]) == 2
+    assert Path(ofx_path).read_bytes() == antes
+
+    # hard link do extrato fora da pasta de entrada: caminho diferente, mesmo arquivo
+    link = tmp_path / "saidas" / "link.csv"
+    link.parent.mkdir()
+    os.link(ofx_path, link)
+    assert main([str(ofx_path), "--saida", str(link)]) == 2
+    assert main([str(tmp_path), "--saida", str(link)]) == 2
     assert Path(ofx_path).read_bytes() == antes

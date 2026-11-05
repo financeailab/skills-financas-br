@@ -58,7 +58,15 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.saida:
         destino = os.path.normcase(os.path.realpath(args.saida))
-        if any(os.path.normcase(os.path.realpath(a)) == destino for a in listar_arquivos(caminhos)):
+        existe = os.path.exists(args.saida)
+
+        def _mesmo(a) -> bool:
+            if os.path.normcase(os.path.realpath(a)) == destino:
+                return True
+            # hard link: caminho diferente, mesmo arquivo no disco
+            return existe and os.path.exists(a) and os.path.samefile(args.saida, a)
+
+        if any(_mesmo(a) for a in listar_arquivos(caminhos)):
             print("erro: --saida aponta para um extrato de entrada; escolha outro caminho", file=sys.stderr)
             return 2
 
