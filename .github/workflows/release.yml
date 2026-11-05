@@ -6,32 +6,47 @@ on:
       - "v*"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: montar um zip por plugin do marketplace.json
         run: |
           python3 - <<'PY'
           import json
           import pathlib
+          import shutil
           import zipfile
 
+          shutil.rmtree("dist", ignore_errors=True)
+          pathlib.Path("dist").mkdir()
+          gerados = []
           marketplace = json.loads(pathlib.Path(".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
           for plugin in marketplace["plugins"]:
               nome = plugin["name"]
               origem = pathlib.Path(f"plugins/{nome}/skills/{nome}")
-              destino = pathlib.Path(f"{nome}.zip")
+              destino = pathlib.Path("dist") / f"{nome}.zip"
               with zipfile.ZipFile(destino, "w", zipfile.ZIP_DEFLATED) as zf:
                   for arquivo in sorted(origem.rglob("*")):
                       if arquivo.is_file():
                           zf.write(arquivo, arcname=str(pathlib.Path(nome) / arquivo.relative_to(origem)))
+              gerados.append(str(destino))
               print(f"{destino}: {destino.stat().st_size} bytes")
+          with open("lista-zips.txt", "w", encoding="utf-8") as lista:
+              for z in gerados:
+                  print(z, file=lista)
           PY
       - name: criar a release com os zips (tag repetida falha, sem --clobber)
-        run: gh release create "$GITHUB_REF_NAME" *.zip
+        run: |
+          set -euo pipefail
+          mapfile -t ZIPS < lista-zips.txt
+          gh release create "$GITHUB_REF_NAME" "${ZIPS[@]}"
         env:
           GH_TOKEN: ${{ github.token }}
