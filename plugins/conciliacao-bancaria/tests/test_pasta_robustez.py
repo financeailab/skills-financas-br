@@ -13,8 +13,8 @@ import tempfile
 from contextlib import redirect_stdout
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts", "engine"))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts", "engine"))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts"))
 import conciliar   # noqa: E402
 
 casos = []

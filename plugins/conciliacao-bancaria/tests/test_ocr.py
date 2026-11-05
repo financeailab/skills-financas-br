@@ -9,7 +9,7 @@ import sys
 import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ENGINE = os.path.join(os.path.dirname(HERE), "scripts", "engine")
+ENGINE = os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts", "engine")
 sys.path.insert(0, ENGINE)
 
 from ingest_extrato import ingest_extrato, ocr_disponivel   # noqa: E402

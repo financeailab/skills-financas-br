@@ -22,8 +22,8 @@ from datetime import date
 from decimal import Decimal
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts", "engine"))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts", "engine"))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts"))
 import conciliar                       # noqa: E402
 from reconcile import match_banco      # noqa: E402
 from posicao import varrer_pasta, consolidar_extratos  # noqa: E402

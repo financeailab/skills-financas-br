@@ -21,8 +21,8 @@ from datetime import date
 from decimal import Decimal
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ENGINE = os.path.join(os.path.dirname(HERE), "scripts", "engine")
-SCRIPTS = os.path.join(os.path.dirname(HERE), "scripts")
+ENGINE = os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts", "engine")
+SCRIPTS = os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts")
 sys.path.insert(0, ENGINE)
 sys.path.insert(0, SCRIPTS)
 
