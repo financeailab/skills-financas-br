@@ -45,6 +45,7 @@ CATEGORIAS: dict[str, list[tuple[re.Pattern, bool]]] = {
         # todos os padroes aqui ja carregam o marcador de tarifa embutido (PF e gratis por regra).
         (re.compile(r"\bTAR(?:IFA)? PIX"), False),
         (re.compile(r"PIX (PAG|ENVIO|RECEB)\w*.*TARIF"), False),
+        (re.compile(r"\bTARIFA AVULSA ENVIO PIX"), False),
         # "PAGTO PIX" sozinho e a OPERACAO; so conta com marcador de tarifa junto.
         (re.compile(r"PAGTO\.? PIX"), True),
     ],

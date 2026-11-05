@@ -119,6 +119,8 @@ def test_cambio_nova_categoria():
     assert classifica("TAR CAMB") == "cambio"
     assert classifica("TARIFA ENVIO OPE") == "cambio"
     assert classifica("TARIFA AVULSA ENVIO") == "cambio"
+    # envio de Pix com tarifa avulsa e Pix, nao cambio (pix vem antes de cambio na ordem)
+    assert classifica("TARIFA AVULSA ENVIO PIX") == "pix"
     assert classifica("CARTA CIRCULARIZADORA") == "cambio"
 
 
