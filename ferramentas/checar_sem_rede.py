@@ -76,6 +76,20 @@ class _Visitor(ast.NodeVisitor):
         self.achados: list[tuple[int, str]] = []
         self._pilha_funcoes: list[str] = []
         self._os_nomes = {"os"}  # nomes que apontam para o modulo os ("import os as s")
+        self._os_proibidos: set[str] = set()  # nomes locais de API proibida ("from os import system as f")
+
+    def coletar_nomes_de_os(self, arvore) -> None:
+        """1a passada: aliases de os e nomes proibidos importados de os no modulo
+        inteiro, para que um import depois da funcao que o usa tambem conte."""
+        for no in ast.walk(arvore):
+            if isinstance(no, ast.Import):
+                for alias in no.names:
+                    if alias.name == "os" and alias.asname:
+                        self._os_nomes.add(alias.asname)
+            elif isinstance(no, ast.ImportFrom) and not no.level and no.module == "os":
+                for alias in no.names:
+                    if _os_forbidden(alias.name):
+                        self._os_proibidos.add(alias.asname or alias.name)
 
     def _funcao_atual(self):
         return self._pilha_funcoes[-1] if self._pilha_funcoes else None
@@ -93,8 +107,6 @@ class _Visitor(ast.NodeVisitor):
     def visit_Import(self, node):
         for alias in node.names:
             topo = alias.name.split(".")[0]
-            if alias.name == "os" and alias.asname:
-                self._os_nomes.add(alias.asname)
             if topo not in self.allowlist and not self._excecao(topo):
                 self.achados.append((node.lineno, f"import '{alias.name}' fora da allowlist"))
         self.generic_visit(node)
@@ -134,6 +146,11 @@ class _Visitor(ast.NodeVisitor):
             self.achados.append((node.lineno, f"uso proibido 'os.{node.attr}'"))
         self.generic_visit(node)
 
+    def visit_Name(self, node):
+        # uso do nome local de "from os import system [as f]", em qualquer ordem
+        if node.id in self._os_proibidos:
+            self.achados.append((node.lineno, f"uso proibido '{node.id}' (importado de os)"))
+
 
 def checar_arquivo(caminho: Path, allowlist: set, config: dict):
     """Retorna lista de (linha, motivo) para um arquivo."""
@@ -143,6 +160,7 @@ def checar_arquivo(caminho: Path, allowlist: set, config: dict):
         return [(e.lineno or 1, f"erro de parse: {e.msg}")]
 
     visitor = _Visitor(caminho, allowlist, config)
+    visitor.coletar_nomes_de_os(arvore)
     visitor.visit(arvore)
     return visitor.achados
 

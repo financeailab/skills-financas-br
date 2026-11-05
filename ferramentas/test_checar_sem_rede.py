@@ -58,6 +58,8 @@ CASOS_NEGATIVOS = {
     "from_os_import_system": "from os import system\n",
     "from_os_import_system_as": "from os import system as s\n",
     "os_alias_spawnv": 'import os as s\ns.spawnv(0, "x", [])\n',
+    "alias_de_os_depois_da_funcao": 'def run():\n    s.system("curl https://example.com")\nimport os as s\nrun()\n',
+    "nome_de_os_depois_da_funcao": 'def run():\n    f("curl https://example.com")\nfrom os import system as f\nrun()\n',
 }
 
 
@@ -66,6 +68,9 @@ def test_ensaio_negativo_reprova(tmp_path, nome_caso):
     pasta = _escrever(tmp_path, "x.py", CASOS_NEGATIVOS[nome_caso])
     achados = _rodar(pasta)
     assert achados, f"esperava reprovacao para o ensaio: {nome_caso}"
+    if nome_caso.endswith("_depois_da_funcao"):
+        # o uso dentro da funcao (linha 2) reprova, nao so o import que vem depois
+        assert any(linha == 2 for linha, _ in achados), achados
 
 
 def test_v5_13_import_socket_em_sheets_push_nao_cobre_arquivo_inteiro(tmp_path):
