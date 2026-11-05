@@ -12,6 +12,7 @@ Finanças Corporativas.
 | Ferramenta | O que faz | Plugin |
 |---|---|---|
 | Auditor de Tarifas | Soma as tarifas bancárias de um extrato (OFX/CSV) por banco, mês e tipo, com o IOF separado do que é tarifa de fato | [`plugins/auditor-de-tarifas`](plugins/auditor-de-tarifas/README.md) |
+| Conciliação Bancária | Concilia o extrato bancário (OFX, CSV, XLSX, XLS ou PDF) contra o razão do ERP, classifica cada lançamento, lista as pendências e fecha a amarração de saldo | [`plugins/conciliacao-bancaria`](plugins/conciliacao-bancaria/README.md) |
 
 ## Como instalar
 
@@ -37,6 +38,8 @@ do [Auditor de Tarifas](plugins/auditor-de-tarifas/README.md).
   vão para a Anthropic.
 - **Cowork** (desde 06/10/2026, planos Pro, Max e Ultra): o trabalho roda na nuvem da Anthropic
   e o arquivo sobe para lá.
+- **Exceção opt-in:** o modo `posicao --sheet` da Conciliação Bancária envia só saldos agregados, com a
+  conta mascarada, para uma planilha Google sua (veja o README da ferramenta).
 - **claude.ai (web ou app), com o `.zip` como skill**: o trabalho roda na nuvem da Anthropic e o
   arquivo que você anexa sobe para lá antes de o motor rodar, porque a conversa inteira roda lá. Isso vale para
   qualquer skill de claude.ai, não é específico desta ferramenta.
