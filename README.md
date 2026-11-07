@@ -32,9 +32,9 @@ do [Auditor de Tarifas](plugins/auditor-de-tarifas/README.md).
 ## Privacidade, por plataforma
 
 - **Terminal**: o motor roda no seu computador e nada sai dele.
-- **Claude Code, em sessão local**: o motor roda no seu computador e o Claude lê só o resumo que
-  ele imprime; o seu pedido, esse resumo e qualquer arquivo que você mandar o Claude abrir vão
-  para a Anthropic.
+- **Claude Code, em sessão local**: o motor roda no seu computador e a skill foi feita para o Claude
+  ler só o resumo que ele imprime; o seu pedido, esse resumo e qualquer arquivo que o Claude abrir
+  vão para a Anthropic.
 - **Cowork** (desde 06/10/2026, planos Pro, Max e Ultra): o trabalho roda na nuvem da Anthropic
   e o arquivo sobe para lá.
 - **claude.ai (web ou app), com o `.zip` como skill**: o trabalho roda na nuvem da Anthropic e o

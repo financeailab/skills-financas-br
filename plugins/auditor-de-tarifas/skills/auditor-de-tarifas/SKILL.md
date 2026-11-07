@@ -4,8 +4,8 @@ description: >-
   Responde "quanto seu banco te cobrou de tarifa esse ano?". A pessoa informa onde está o extrato
   (OFX/CSV) e o motor Python soma as tarifas (manutenção, TED/DOC, Pix PJ, boleto,
   custódia, câmbio) por banco, mês e tipo, com o IOF separado (imposto, não tarifa).
-  Rodando no terminal ou no Claude Code em sessão local, o Claude lê só o
-  resumo agregado (totais), nunca o lançamento individual. Use quando a pessoa quiser
+  No Claude Code em sessão local, a skill foi feita para o Claude ler só o
+  resumo agregado (totais), não o lançamento individual. Use quando a pessoa quiser
   auditar/somar as tarifas do banco no Brasil.
 ---
 
