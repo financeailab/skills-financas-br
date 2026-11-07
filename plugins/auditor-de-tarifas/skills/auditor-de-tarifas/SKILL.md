@@ -1,7 +1,7 @@
 ---
 name: auditor-de-tarifas
 description: >-
-  Responde "quanto seu banco te cobrou de tarifa esse ano?". A pessoa anexa o extrato
+  Responde "quanto seu banco te cobrou de tarifa esse ano?". A pessoa informa onde está o extrato
   (OFX/CSV) e o motor Python soma as tarifas (manutenção, TED/DOC, Pix PJ, boleto,
   custódia, câmbio) por banco, mês e tipo, com o IOF separado (imposto, não tarifa).
   Rodando no terminal ou no Claude Code em sessão local, o Claude lê só o
@@ -21,7 +21,7 @@ Ninguém sabe quanto paga de tarifa por ano porque ela vem picada: R$12,90 de ma
 
 O que vale depende de onde a conversa roda. Diga isso à pessoa, sem prometer o que a plataforma não entrega.
 
-- **No terminal ou no Claude Code em sessão local:** o motor lê o extrato no disco e você lê só o resumo agregado; não abra o arquivo bruto. O motor Python classifica e soma **localmente** e, com `--saida`, grava um CSV no disco dela só com as linhas que classificou como tarifa ou IOF. Para você (Claude) sobe só o **resumo agregado** (total de tarifa, quebra por banco/mês/tipo, contagem de não-classificados). **Nenhum lançamento individual** com valor e contraparte aparece no stdout lido por você. Se a pessoa quiser ver linha a linha, oriente-a a abrir o CSV local (`--saida`). O pedido dela, esse resumo e qualquer arquivo que você abrir vão para a Anthropic.
+- **No terminal ou no Claude Code em sessão local:** o motor lê o extrato no disco e você lê só o resumo agregado: peça o caminho do arquivo, não peça para ela colar ou anexar o conteúdo e não abra o arquivo bruto. O motor Python classifica e soma **localmente** e, com `--saida`, grava um CSV no disco dela só com as linhas que classificou como tarifa ou IOF. Para você (Claude) sobe só o **resumo agregado** (total de tarifa, quebra por banco/mês/tipo, contagem de não-classificados). O rótulo do banco sai como vem no arquivo (o BANKID do OFX ou a coluna `banco` do CSV), e um aviso de linha ilegível diz só o arquivo e o número da linha, nunca o conteúdo dela. **Nenhum lançamento individual** com valor e contraparte aparece no stdout lido por você. Se a pessoa quiser ver linha a linha, oriente-a a abrir o CSV local (`--saida`). O pedido dela, esse resumo e qualquer arquivo que você abrir vão para a Anthropic.
 - **No Cowork ou numa conversa comum do Claude (web ou app):** o arquivo está na nuvem da Anthropic: avise a pessoa antes de ela anexar ou de abrir a tarefa, em vez de dizer que nada sobe, e sugira o terminal, o Claude Code em sessão local ou anonimizar o extrato.
 
 ## O que faz (e o que não faz)
@@ -48,7 +48,7 @@ Há um extrato fictício em `exemplo/extrato_341.ofx` para testar.
 
 ## Fluxo que você (Claude) conduz
 
-1. Peça o extrato do período (OFX de preferência; CSV serve). Explique que é **um arquivo por conta** e diga o que acontece com o arquivo na plataforma em que a conversa roda (veja o contrato de privacidade acima).
+1. Peça o caminho do extrato do período (OFX de preferência; CSV serve), não o conteúdo. Explique que é **um arquivo por conta** e diga o que acontece com o arquivo na plataforma em que a conversa roda (veja o contrato de privacidade acima).
 2. Rode o motor. Leia **só o resumo**.
 3. Apresente o número anual, a quebra por tipo (quase sempre manutenção e boleto lideram) e o mês fora da curva, se houver.
 4. Aponte as **duas jogadas** com o número na mão:

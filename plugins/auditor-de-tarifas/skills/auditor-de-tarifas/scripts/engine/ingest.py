@@ -51,13 +51,13 @@ def ler_ofx(texto: str) -> tuple[list[Txn], list[str]]:
         return [], ["arquivo OFX vazio ou sem lancamentos"]
 
     txns: list[Txn] = []
-    for bloco_match in _STMTTRN.finditer(texto):
+    for n, bloco_match in enumerate(_STMTTRN.finditer(texto), 1):
         bloco = bloco_match.group(1)
         dtposted = _campo_ofx(bloco, "DTPOSTED")
         trnamt = _campo_ofx(bloco, "TRNAMT")
         descricao = _campo_ofx(bloco, "MEMO") or _campo_ofx(bloco, "NAME")
         if dtposted is None or trnamt is None or descricao is None:
-            avisos.append("lancamento OFX incompleto ignorado (faltou data/valor/descricao)")
+            avisos.append(f"lancamento OFX {n} incompleto ignorado (faltou data/valor/descricao)")
             continue
         try:
             txns.append(Txn(
@@ -66,8 +66,9 @@ def ler_ofx(texto: str) -> tuple[list[Txn], list[str]]:
                 valor=parse_valor(trnamt, origem="ofx"),
                 banco=banco,
             ))
-        except ValueError as e:
-            avisos.append(f"lancamento OFX invalido ignorado: {e}")
+        except ValueError:
+            # sem o texto da excecao: ele traz o valor bruto, e o aviso vai pro stderr que o Claude le
+            avisos.append(f"lancamento OFX {n} invalido ignorado (data ou valor ilegivel)")
     return txns, avisos
 
 
@@ -119,7 +120,7 @@ def ler_csv(texto: str) -> tuple[list[Txn], list[str]]:
         return [], ["CSV sem colunas reconheciveis (esperado data/descricao/valor)"]
 
     txns: list[Txn] = []
-    for linha in linhas[1:]:
+    for n, linha in enumerate(linhas[1:], 2):
         if not linha or all(not c.strip() for c in linha):
             continue
         try:
@@ -131,8 +132,8 @@ def ler_csv(texto: str) -> tuple[list[Txn], list[str]]:
                 valor=parse_valor(linha[idx_valor], origem="br"),
                 banco=banco or None,
             ))
-        except (ValueError, IndexError) as e:
-            avisos.append(f"linha CSV invalida ignorada: {e}")
+        except (ValueError, IndexError):
+            avisos.append(f"linha CSV {n} invalida ignorada (data ou valor ilegivel, ou coluna faltando)")
     return txns, avisos
 
 
@@ -161,10 +162,12 @@ def ler_arquivo(caminho: Path) -> tuple[list[Txn], list[str]]:
 
     sufixo = caminho.suffix.lower()
     if sufixo == ".ofx":
-        return ler_ofx(texto)
-    if sufixo == ".csv":
-        return ler_csv(texto)
-    return [], [f"formato nao suportado nesta fase (F1 = OFX/CSV): {caminho.name}"]
+        txns, avisos = ler_ofx(texto)
+    elif sufixo == ".csv":
+        txns, avisos = ler_csv(texto)
+    else:
+        return [], [f"formato nao suportado nesta fase (F1 = OFX/CSV): {caminho.name}"]
+    return txns, [f"{caminho.name}: {a}" for a in avisos]
 
 
 # cabecalho exato do CSV de saida do proprio auditor (--saida). Detectar por
