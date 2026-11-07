@@ -148,3 +148,20 @@ def test_ler_csv_aceita_sufixo_itau():
     assert avisos == [], avisos
     assert len(txns) == 1, txns
     assert txns[0].valor == Decimal("-123.45")
+
+
+def test_aviso_diz_arquivo_e_posicao_nunca_o_texto_do_extrato(tmp_path):
+    # o aviso vai pro stderr que o Claude le (revisao do registry, issue #434)
+    csv_txt = "data;descricao;valor;banco\n05/01/2025;TAR PIX;JOAO SILVA;341\nJOAO SILVA;TAR PIX;-2,00;341\n05/01/2025;TAR PIX\n"
+    bloco = "<STMTTRN>\n<DTPOSTED>20250110\n<TRNAMT>{}\n<MEMO>TAR PIX\n</STMTTRN>\n"
+    ofx_txt = "<OFX>\n" + bloco.format("JOAO SILVA") + bloco.format("-2.00") + bloco.replace("<TRNAMT>{}\n", "") + "</OFX>\n"
+    csv_av = [f"linha CSV {n} invalida ignorada (data ou valor ilegivel, ou coluna faltando)" for n in (2, 3, 4)]
+    ofx_av = ["lancamento OFX 1 invalido ignorado (data ou valor ilegivel)",
+              "lancamento OFX 3 incompleto ignorado (faltou data/valor/descricao)"]
+    assert ler_csv(csv_txt)[1] == csv_av
+    txns, avisos = ler_ofx(ofx_txt)
+    assert avisos == ofx_av and len(txns) == 1
+    (tmp_path / "ruim.csv").write_text(csv_txt, encoding="utf-8")
+    (tmp_path / "ruim.ofx").write_text(ofx_txt, encoding="utf-8")
+    assert ler_arquivo(tmp_path / "ruim.csv")[1] == [f"ruim.csv: {a}" for a in csv_av]
+    assert ler_arquivo(tmp_path / "ruim.ofx")[1] == [f"ruim.ofx: {a}" for a in ofx_av]

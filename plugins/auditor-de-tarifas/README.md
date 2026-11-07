@@ -35,9 +35,11 @@ python scripts/auditar_tarifas.py <extrato.ofx> [<extrato2.csv> ...] [--ano 2025
 ## Privacidade
 
 - **Terminal**: o motor lê o extrato no seu computador e nada sai dele.
-- **Claude Code, em sessão local**: o motor também lê o extrato no disco e o Claude lê só o resumo
-  agregado que ele imprime; o seu pedido, esse resumo e qualquer arquivo que você mandar o
-  Claude abrir vão para a Anthropic.
+- **Claude Code, em sessão local**: basta dar o caminho do extrato, sem colar nem anexar o conteúdo.
+  O motor lê o arquivo no disco e o Claude lê só o que ele imprime: o resumo agregado, com o banco
+  pelo rótulo que está no arquivo (o BANKID do OFX ou a coluna `banco` do CSV), e avisos de linha
+  ilegível que dizem só o arquivo e o número da linha, nunca o conteúdo dela. O seu pedido, esse
+  resumo e qualquer arquivo que você mandar o Claude abrir vão para a Anthropic.
 - **Cowork** (desde 06/10/2026, planos Pro, Max e Ultra) e **claude.ai** (web ou app): o trabalho
   roda na nuvem da Anthropic e o extrato sobe para lá. Nesse caso, anonimize o extrato ou rode
   no terminal ou no Claude Code em sessão local.
