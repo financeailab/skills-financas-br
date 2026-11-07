@@ -120,6 +120,7 @@ def ler_csv(texto: str) -> tuple[list[Txn], list[str]]:
         return [], ["CSV sem colunas reconheciveis (esperado data/descricao/valor)"]
 
     txns: list[Txn] = []
+    # shortcut: n conta registros do csv.reader, e campo entre aspas com quebra de linha desloca a linha fisica; trocar por leitor.line_num se aparecer extrato assim
     for n, linha in enumerate(linhas[1:], 2):
         if not linha or all(not c.strip() for c in linha):
             continue
