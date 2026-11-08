@@ -1,6 +1,6 @@
 # Conciliação Bancária
 
-Concilia o **extrato do banco contra o razão do ERP** sem o extrato sair da sua máquina. Você
+Concilia o **extrato do banco contra o razão do ERP**, com o motor rodando na sua máquina (no terminal ou no Claude Code em sessão local). Você
 entrega o extrato (OFX, CSV, XLSX, XLS ou PDF) e o razão no formato do `modelo-razao.csv`; o
 motor Python cruza os dois, classifica cada lançamento (conciliado, com diferença, em lote,
 pendente de cada lado), explica a cauda que não fecha e confere a **amarração de saldo**. É
