@@ -31,6 +31,8 @@
     }
   },
   "excecoes": [
-    {"arquivo": "sheets_push.py", "funcao": "push_para_sheet", "import": "gspread"}
+    {"arquivo": "sheets_push.py", "funcao": "push_para_sheet", "import": "gspread"},
+    {"arquivo": "conciliar.py", "funcao": "main", "import": "logging"},
+    {"arquivo": "conciliar.py", "funcao": "main", "import": "warnings"}
   ]
 }
