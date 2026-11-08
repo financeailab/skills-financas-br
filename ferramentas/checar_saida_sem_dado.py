@@ -23,13 +23,15 @@ Reprova (uma linha "arquivo:linha: regra motivo" por achado, sem ecoar o codigo)
   e profundidade), chamada de `main` no nivel do modulo fora dele, __main__.py sem ele e, em todo
   .py, instrucao de topo ou de corpo de classe que executa algo (fora do template, so import, def,
   class, atribuicao, docstring, sys.path.*, try de import opcional e if com corpo assim). O template
-  pega tudo (BaseException), so escreve texto fixo e sai com codigo inteiro fora do handler: nenhum
-  texto de excecao, de SystemExit ou de retorno de main() chega a saida.
+  pega tudo (BaseException), so escreve texto fixo e sai com codigo inteiro fora do handler, e cala a
+  excecao nao levantavel (`__del__`, finalizador): nenhum texto de excecao, de SystemExit ou de
+  retorno de main() chega a saida.
   Limite: expressao avaliada na definicao (valor de atribuicao, teste de if, default de parametro,
   decorador, base de classe) roda antes do template; o teste-canario de cada motor cobre esse caminho.
-- R3: pyproject.toml/setup.cfg que declara entry point ([project.scripts], gui-scripts,
-  console_scripts): ponto de entrada fora do template nao e suportado.
-- Erro de parse.
+- R3: pyproject.toml que declara executavel (project.scripts, project.gui-scripts, tool.poetry.scripts,
+  em qualquer forma de TOML) ou setup.cfg com console_scripts/gui_scripts em [options.entry_points]:
+  ponto de entrada fora do template nao e suportado.
+- Erro de parse (inclusive de pyproject.toml e setup.cfg).
 Pasta inexistente ou sem .py: exit 2.
 
 Escape (so R1): comentario `# saida-ok: <motivo>` na linha do achado, motivo nao vazio, lido por
@@ -39,17 +41,18 @@ para a revisao conferir. R2 e R3 nao tem escape.
 from __future__ import annotations
 
 import ast
+import configparser
 import io
 import re
 import sys
 import tokenize
+import tomllib
 from pathlib import Path
 
 _ESCAPE = re.compile(r"#\s*saida-ok:\s*(\S.*)$")
 _ATRIBUTOS_OK = {"__class__", "errno", "strerror"}
 _SYS_EXCECAO = {"exception", "exc_info"}
 _CANAIS_FORA = {"threading", "_thread", "atexit", "multiprocessing"}
-_ENTRY_POINT = re.compile(r"^\s*\[(project\.scripts|project\.gui-scripts)\]|console_scripts", re.MULTILINE)
 R1, R2, R3 = "R1", "R2", "R3"
 _MSG_R3 = "ponto de entrada fora do template _TEMPLATE_MAIN de checar_saida_sem_dado.py"
 
@@ -57,6 +60,7 @@ _MSG_R3 = "ponto de entrada fora do template _TEMPLATE_MAIN de checar_saida_sem_
 _TEMPLATE_MAIN = r'''
 if __name__ == "__main__":
     import sys as _sys
+    _sys.unraisablehook = lambda _u: None
     _codigo = 2
     try:
         _codigo = main()
@@ -205,12 +209,28 @@ def _r3(arvore, caminho: Path) -> tuple[list[tuple[int, str, str]], tuple[int, i
     return achados, faixa
 
 
+def _entry_point(caminho: Path, fonte: str) -> list[tuple[int, str, str]]:
+    """Executavel declarado em pyproject.toml/setup.cfg roda main() fora do template."""
+    try:
+        if caminho.name == "pyproject.toml":
+            d = tomllib.loads(fonte)
+            achou = bool({"scripts", "gui-scripts"} & set(d.get("project", {}))) \
+                or "scripts" in d.get("tool", {}).get("poetry", {})
+        else:
+            cfg = configparser.ConfigParser(interpolation=None)
+            cfg.read_string(fonte)
+            achou = cfg.has_section("options.entry_points") \
+                and bool({"console_scripts", "gui_scripts"} & set(cfg["options.entry_points"]))
+    except Exception:  # invalido ou com tipo inesperado: fail-closed
+        return [(1, "parse", "erro de parse")]
+    return [(1, R3, "entry point declarado fora do template")] if achou else []
+
+
 def checar_arquivo(caminho: Path) -> tuple[list[tuple[int, str, str]], list[tuple[int, str, str]]]:
     """Devolve (achados, escapes), cada item (linha, regra, motivo)."""
     fonte = caminho.read_text(encoding="utf-8")
     if caminho.suffix != ".py":
-        m = _ENTRY_POINT.search(fonte)
-        return ([(fonte.count("\n", 0, m.start()) + 1, R3, "entry point declarado fora do bloco __main__")] if m else []), []
+        return _entry_point(caminho, fonte), []
     try:
         arvore = ast.parse(fonte, filename=str(caminho))
     except SyntaxError as e:

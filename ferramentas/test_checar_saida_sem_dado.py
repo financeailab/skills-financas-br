@@ -260,6 +260,9 @@ CASOS_TEMPLATE = {
     "systemexit_int": ("", "def main():\n    raise SystemExit(3)\n", {}, 3),
     "main_devolve_none": ("", "def main():\n    pass\n", {}, 0),
     "argparse_erro": ("import argparse\n", "def main():\n    argparse.ArgumentParser().parse_args(['--x'])\n", {}, 2),
+    # Gate 2: excecao em __del__ e "nao levantavel"; sem o hook do template, o Python a imprime com traceback
+    "destrutor": ("class C:\n    def __del__(self):\n        int(self.v)\n\n",
+                  "def main():\n    c = C()\n    c.v = 'CANARIO SILVA 98765,43'\n    return 0\n", {}, 0),
 }
 
 
@@ -291,12 +294,28 @@ def test_r3_main_py_e_ponto_de_entrada(tmp_path):
 @pytest.mark.parametrize("arquivo,texto", [
     ("pyproject.toml", '[project]\nname = "x"\n\n[project.scripts]\nx = "x.cli:main"\n'),
     ("setup.cfg", "[options.entry_points]\nconsole_scripts =\n    x = x.cli:main\n"),
-])
+    # Gate 2: formas validas que a regex antiga deixava passar
+    ("pyproject.toml", '[project]\nname = "x"\nscripts = {x = "x.cli:main"}\n'),
+    ("pyproject.toml", '[project.gui-scripts]\nx = "x.cli:main"\n'),
+    ("pyproject.toml", '[tool.poetry.scripts]\nx = "x.cli:main"\n'),
+    ("setup.cfg", "[options.entry_points]\ngui_scripts =\n    x = x.cli:main\n"),
+], ids=["project_scripts", "console_scripts", "scripts_inline", "gui_scripts", "poetry", "cfg_gui_scripts"])
 def test_r3_reprova_entry_point_declarado(tmp_path, arquivo, texto):
     pasta = _motor(tmp_path, "x = 1\n")
     (pasta / "x" / arquivo).write_text(texto, encoding="utf-8")
     codigo, saida = _rodar(pasta)
     assert codigo == 1 and f"{arquivo}:" in saida and "R3 entry point" in saida
+
+
+@pytest.mark.parametrize("arquivo,texto", [
+    ("pyproject.toml", "[project\nname = \n"),
+    ("setup.cfg", "sem secao = 1\n"),
+], ids=["toml_invalido", "cfg_invalido"])
+def test_config_invalida_reprova(tmp_path, arquivo, texto):
+    pasta = _motor(tmp_path, "x = 1\n")
+    (pasta / "x" / arquivo).write_text(texto, encoding="utf-8")
+    codigo, saida = _rodar(pasta)
+    assert codigo == 1 and f"{arquivo}:1: parse erro de parse" in saida
 
 
 def test_pyproject_sem_entry_point_passa(tmp_path):

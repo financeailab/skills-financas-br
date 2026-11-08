@@ -140,6 +140,7 @@ def main(argv: list[str] | None = None) -> int:
 # de retorno de main() pode trazer conteudo do extrato, entao nada disso chega a saida.
 if __name__ == "__main__":
     import sys as _sys
+    _sys.unraisablehook = lambda _u: None
     _codigo = 2
     try:
         _codigo = main()
