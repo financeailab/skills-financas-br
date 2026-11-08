@@ -191,3 +191,12 @@ def test_quadro_da_peca_tarifa_pix_pj_mantem_a_classe():
         "PIX ENVIADO TARIFA": "outra_tarifa",
     }
     assert {nome: classifica(nome) for nome in quadro} == quadro
+
+
+# --- v0.1.4 (D4): a marca do veto e uma constante, nao uma string repetida ---
+
+
+def test_veto_de_operacao_usa_so_a_constante():
+    from scripts.engine.dicionario import CATEGORIAS, FORA_DE_OPERACAO
+    marcas = {marca for padroes in CATEGORIAS.values() for _, marca in padroes if isinstance(marca, str)}
+    assert marcas == {FORA_DE_OPERACAO}

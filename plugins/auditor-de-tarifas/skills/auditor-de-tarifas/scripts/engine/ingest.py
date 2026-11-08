@@ -29,9 +29,19 @@ class Txn:
 
 
 _STMTTRN = re.compile(r"<STMTTRN>", re.IGNORECASE)
-# fim de um lancamento: o seu </STMTTRN> ou, sem ele, o proximo <STMTTRN> ou o </BANKTRANLIST>
-_FIM_STMTTRN = re.compile(r"</STMTTRN>|<STMTTRN>|</BANKTRANLIST>", re.IGNORECASE)
+# fim de um lancamento: o seu </STMTTRN> ou, sem ele, o proximo <STMTTRN>, o fechamento de um agregado que o
+# contem ou a abertura de um irmao do BANKTRANLIST ou de outro extrato (estrutura do STMTRS e do CCSTMTRS no
+# OFX 2.3). Sem isso o bloco vai ao fim do arquivo e pega <MEMO> de fora do lancamento (pendente, saldo).
+_FIM_STMTTRN = re.compile(
+    r"</?STMTTRN>"
+    r"|</(?:BANKTRANLIST|(?:CC)?STMTRS|(?:CC)?STMTTRNRS|[A-Z0-9]+MSGSRSV\d|OFX)>"
+    r"|<(?:BANKTRANLISTP|LEDGERBAL|AVAILBAL|CASHADVBALAMT|INTRATE[A-Z]*|REWARDINFO|BALLIST|MKTGINFO"
+    r"|BANKTRANLIST|(?:CC)?STMTRS|(?:CC)?STMTTRNRS|[A-Z0-9]+MSGSRSV\d)>",
+    re.IGNORECASE,
+)
 _BANKID = re.compile(r"<BANKID>\s*([^<\r\n]+)", re.IGNORECASE)
+# conta de cada extrato (o BANKID vem dentro dela); o BANKACCTTO de uma TED e o destino, nao o banco do extrato
+_BANKACCTFROM = re.compile(r"<BANKACCTFROM>(.*?)</BANKACCTFROM>", re.IGNORECASE | re.DOTALL)
 
 
 def _campo_ofx(bloco: str, tag: str) -> str | None:
@@ -66,6 +76,9 @@ def ler_ofx(texto: str) -> tuple[list[Txn], list[str]]:
         return [], ["arquivo OFX vazio ou sem lancamentos"]
     if sem_fecho:
         avisos.append(f"{sem_fecho} lancamento(s) OFX sem </STMTTRN>, lido(s) ate o proximo")
+    bancos = {b.group(1).strip() for c in _BANKACCTFROM.finditer(texto) if (b := _BANKID.search(c.group(1)))}
+    if len(bancos) > 1:
+        avisos.append("mais de um banco no mesmo OFX; todos entram com o codigo do primeiro")
 
     txns: list[Txn] = []
     for n, bloco in enumerate(blocos, 1):
@@ -187,8 +200,8 @@ def ler_arquivo(caminho: Path) -> tuple[list[Txn], list[str]]:
     sufixo = caminho.suffix.lower()
     if sufixo not in (".ofx", ".csv"):
         return [], [f"formato nao suportado nesta fase (F1 = OFX/CSV): {caminho.name}"]
+    texto = _decodifica(bruto)  # nunca levanta: o ultimo recurso e errors="replace"
     try:
-        texto = _decodifica(bruto)
         txns, avisos = ler_ofx(texto) if sufixo == ".ofx" else ler_csv(texto)
     except Exception as e:
         # so o nome da classe: a mensagem pode trazer trecho do arquivo (ex.: csv.Error)
@@ -219,30 +232,44 @@ def _eh_saida_classificada(caminho: Path) -> bool:
     return cols == _HEADER_SAIDA
 
 
-def listar_arquivos(caminhos: list[Path]) -> list[Path]:
-    """Expande arquivos e/ou diretorios na lista de extratos que serao lidos."""
+def listar_arquivos(caminhos: list[Path]) -> tuple[list[Path], list[str]]:
+    """Expande arquivos e/ou diretorios na lista de extratos que serao lidos.
+
+    Caminho que nao da para listar (pasta sem permissao) vira aviso e e pulado.
+    """
     arquivos: list[Path] = []
+    avisos: list[str] = []
     for c in caminhos:
         p = Path(c)
-        if p.is_dir():
-            for f in sorted(p.iterdir()):
-                if f.suffix.lower() not in (".ofx", ".csv"):
-                    continue
-                if f.suffix.lower() == ".csv" and _eh_saida_classificada(f):
-                    continue  # pula o proprio output classificado (anti-duplicacao)
-                arquivos.append(f)
-        else:
-            arquivos.append(p)
-    return arquivos
+        try:
+            # lista direto, sem is_dir: em Python novo (3.14 confirmado) ele devolve False quando a consulta falha
+            filhos = sorted(p.iterdir())
+        except (NotADirectoryError, FileNotFoundError):
+            arquivos.append(p)  # arquivo, ou nao existe: o ler_arquivo le ou avisa, como antes
+            continue
+        except OSError as e:
+            # strerror, nunca str(e): ele traz o caminho; sem nome (".", raiz, UNC), rotulo fixo
+            avisos.append(f"nao foi possivel ler {p.name or 'o caminho indicado'} ({e.strerror or type(e).__name__})")
+            continue
+        for f in filhos:
+            if f.suffix.lower() not in (".ofx", ".csv"):
+                continue
+            if f.suffix.lower() == ".csv" and _eh_saida_classificada(f):
+                continue  # pula o proprio output classificado (anti-duplicacao)
+            arquivos.append(f)
+    return arquivos, avisos
 
 
-def ler_extratos(caminhos: list[Path]) -> tuple[list[Txn], list[str]]:
-    """Le uma lista de arquivos e/ou diretorios, agregando todas as txns."""
-    arquivos = listar_arquivos(caminhos)
+def ler_extratos(caminhos: list[Path], lista: tuple[list[Path], list[str]] | None = None) -> tuple[list[Txn], list[str]]:
+    """Le uma lista de arquivos e/ou diretorios, agregando todas as txns.
+
+    `lista` e o retorno de um listar_arquivos ja feito: quem trava o --saida le a mesma listagem.
+    """
+    arquivos, avisos_da_lista = lista if lista is not None else listar_arquivos(caminhos)
+    todos_avisos = list(avisos_da_lista)  # copia: aviso de arquivo nunca entra na lista de quem chamou (a trava)
     todas_txns: list[Txn] = []
-    todos_avisos: list[str] = []
     if not arquivos:
-        return [], ["nenhum extrato encontrado"]
+        return [], todos_avisos + ["nenhum extrato encontrado"]
     for arquivo in arquivos:
         txns, avisos = ler_arquivo(arquivo)
         todas_txns.extend(txns)
