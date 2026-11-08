@@ -14,8 +14,8 @@ Reprova (uma linha "arquivo:linha: regra motivo" por achado, sem ecoar o codigo)
   `<nome>.errno`, `<nome>.strerror` (texto do sistema operacional). `raise SystemExit(...)` e
   `sys.exit(...)` com <nome> dentro reprovam (o Python imprime a mensagem).
 - R1: `SystemExit(...)`/`sys.exit(...)` com texto formatado (f-string, %, +, .format, str()).
-- R2: traceback.* (inclusive alias e `from traceback import`), logging/logger/log.exception,
-  argumento exc_info, sys.exception() e sys.exc_info() (inclusive `from sys import`), import de
+- R2: traceback.* (inclusive alias e `from traceback import`), `.exception` de qualquer logger,
+  argumento exc_info, sys.exception() e sys.exc_info() (inclusive alias e `from sys import`), import de
   threading, _thread, atexit e multiprocessing (excecao la imprime traceback fora do template).
 - R3: ponto de entrada diferente do template `_TEMPLATE_MAIN` abaixo. O unico ponto de entrada
   aceito e esse bloco, identico na arvore sintatica (comentario e linha em branco nao contam), como
@@ -133,10 +133,11 @@ def _r1(arvore) -> list[tuple[int, str, str]]:
 
 def _r2(arvore) -> list[tuple[int, str, str]]:
     achados = []
-    nomes_tb = {"traceback"}
+    nomes_tb, nomes_sys = {"traceback"}, {"sys"}
     for no in ast.walk(arvore):
         if isinstance(no, ast.Import):
             nomes_tb.update(a.asname for a in no.names if a.name == "traceback" and a.asname)
+            nomes_sys.update(a.asname for a in no.names if a.name == "sys" and a.asname)
             achados += [(no.lineno, R2, "thread/atexit/processo (a excecao la imprime traceback fora do template)")
                         for a in no.names if a.name.split(".")[0] in _CANAIS_FORA]
         elif isinstance(no, ast.ImportFrom) and no.module == "traceback":
@@ -146,13 +147,14 @@ def _r2(arvore) -> list[tuple[int, str, str]]:
         elif isinstance(no, ast.ImportFrom) and no.module == "sys" and any(a.name in _SYS_EXCECAO for a in no.names):
             achados.append((no.lineno, R2, "excecao ativa lida de sys (sys.exception/sys.exc_info)"))
     for no in ast.walk(arvore):
-        if isinstance(no, ast.Attribute) and isinstance(no.value, ast.Name):
-            if no.value.id in nomes_tb:
+        if isinstance(no, ast.Attribute):
+            nome = no.value.id if isinstance(no.value, ast.Name) else None
+            if nome in nomes_tb:
                 achados.append((no.lineno, R2, f"uso de traceback.{no.attr} (imprime a excecao inteira)"))
-            elif no.attr == "exception" and no.value.id in ("logging", "logger", "log"):
-                achados.append((no.lineno, R2, f"{no.value.id}.exception (imprime a excecao inteira)"))
-            elif no.value.id == "sys" and no.attr in _SYS_EXCECAO:
+            elif nome in nomes_sys and no.attr in _SYS_EXCECAO:
                 achados.append((no.lineno, R2, f"sys.{no.attr} (excecao ativa sem nome)"))
+            elif no.attr == "exception":  # qualquer logger (getLogger em variavel, self.log): imprime o traceback
+                achados.append((no.lineno, R2, ".exception de logger (imprime a excecao inteira)"))
         elif isinstance(no, ast.keyword) and no.arg == "exc_info":
             achados.append((no.value.lineno, R2, "exc_info (imprime a excecao inteira)"))
     return achados

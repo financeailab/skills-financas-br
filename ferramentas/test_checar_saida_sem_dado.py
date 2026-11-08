@@ -98,6 +98,10 @@ REPROVA_R2 = {
     "sys_exception": "import sys\ntry:\n    f()\nexcept ValueError:\n    print(sys.exception())\n",
     "sys_exc_info": "import sys\ntry:\n    f()\nexcept ValueError:\n    print(sys.exc_info()[1])\n",
     "from_sys": "from sys import exc_info\n",
+    # ponytail-review do fechar: .exception em logger de variavel ou atributo e sys com alias
+    "logger_de_variavel": "import logging\n_L = logging.getLogger('x')\n" + _em_def("_L.exception('falhou')\n"),
+    "logger_de_atributo": "class C:\n    def f(self):\n        self.log.exception('falhou')\n",
+    "sys_com_alias": "import sys as s\n" + _em_def("print(s.exc_info()[1])\n"),
     "threading": "import threading\n",
     "from_threading": "from threading import Thread\n",
     "thread_baixo": "import _thread\n",
