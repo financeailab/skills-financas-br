@@ -165,3 +165,83 @@ def test_aviso_diz_arquivo_e_posicao_nunca_o_texto_do_extrato(tmp_path):
     (tmp_path / "ruim.ofx").write_text(ofx_txt, encoding="utf-8")
     assert ler_arquivo(tmp_path / "ruim.csv")[1] == [f"ruim.csv: {a}" for a in csv_av]
     assert ler_arquivo(tmp_path / "ruim.ofx")[1] == [f"ruim.ofx: {a}" for a in ofx_av]
+
+
+# --- v0.1.2 (D3a, D3b, D4, D7, D8): excecao vira aviso, OFX sem fechamento, linha fisica ---
+
+_CSV_BOM = "data;descricao;valor;banco\n05/01/2025;TAR PIX;-2,00;341\n"
+
+
+def test_valor_gigante_vira_aviso_da_linha_e_nao_derruba(tmp_path, capsys):
+    from scripts.auditar_tarifas import main
+    gigante = "123456789012345678901234567"  # 27 digitos: o quantize do normalize levanta InvalidOperation
+    (tmp_path / "a.csv").write_text(f"data;descricao;valor;banco\n05/01/2025;TAR PIX;{gigante};341\n05/01/2025;TAR PIX;-2,00;341\n", encoding="utf-8")
+    assert main([str(tmp_path / "a.csv")]) == 0
+    out, err = capsys.readouterr()
+    assert "Total de tarifa no periodo: R$ 2.00" in out
+    assert "aviso: a.csv: linha CSV 2 invalida ignorada (data ou valor ilegivel, ou coluna faltando)" in err
+    assert gigante not in out + err
+    ofx = f"<OFX>\n<STMTTRN>\n<DTPOSTED>20250110\n<TRNAMT>{gigante}\n<MEMO>TAR PIX\n</STMTTRN>\n</OFX>\n"
+    assert ler_ofx(ofx) == ([], ["lancamento OFX 1 invalido ignorado (data ou valor ilegivel)"])
+
+
+def test_arquivo_ilegivel_vira_aviso_e_nao_derruba_os_outros(tmp_path, capsys):
+    from scripts.auditar_tarifas import main
+    ruins = {
+        "cr_solto": "data;descricao;valor;banco\n05/01/2025;TAR\rPIX;-2,00;341\n".encode("utf-8"),
+        "campo_gigante": ("data;descricao;valor;banco\n05/01/2025;" + "A" * 131073 + ";-2,00;341\n").encode("utf-8"),
+        "binario": bytes(range(256)) * 4,
+    }
+    for caso, bruto in ruins.items():
+        pasta = tmp_path / caso
+        pasta.mkdir()
+        (pasta / "ruim.csv").write_bytes(bruto)
+        (pasta / "bom.csv").write_text(_CSV_BOM, encoding="utf-8")
+        assert main([str(pasta)]) == 0, caso
+        out, err = capsys.readouterr()
+        assert err == "aviso: ruim.csv: arquivo ilegivel ignorado (Error)\n", caso  # so a classe, sem a mensagem
+        assert "Total de tarifa no periodo: R$ 2.00" in out, caso
+
+
+_LANC_SEM_FECHO = "<STMTTRN>\n<DTPOSTED>20250110\n<TRNAMT>{}\n<MEMO>TAR PIX\n"
+
+
+def test_ofx_sem_fechamento_nao_funde_lancamentos():
+    ofx = "<OFX>\n<BANKTRANLIST>\n" + _LANC_SEM_FECHO.format("-7.31") + _LANC_SEM_FECHO.format("-2.21") + "</STMTTRN>\n</BANKTRANLIST>\n</OFX>\n"
+    txns, avisos = ler_ofx(ofx)
+    assert [t.valor for t in txns] == [Decimal("-7.31"), Decimal("-2.21")]
+    assert avisos == ["1 lancamento(s) OFX sem </STMTTRN>, lido(s) ate o proximo"]
+
+
+def test_ofx_sem_nenhum_fechamento_le_todos():
+    corpo = "".join(_LANC_SEM_FECHO.format(v) for v in ("-1.00", "-2.00", "-3.00"))
+    for fim in ("</BANKTRANLIST>\n</OFX>\n", ""):  # ultimo bloco antes do </BANKTRANLIST> e no fim do arquivo
+        txns, avisos = ler_ofx("<OFX>\n<BANKTRANLIST>\n" + corpo + fim)
+        assert [t.valor for t in txns] == [Decimal("-1.00"), Decimal("-2.00"), Decimal("-3.00")], fim
+        assert avisos == ["3 lancamento(s) OFX sem </STMTTRN>, lido(s) ate o proximo"], fim
+
+
+def test_ofx_fechado_com_tags_minusculas_nao_avisa():
+    bloco = "<stmttrn>\n<dtposted>20250110\n<trnamt>{}\n<memo>TAR PIX\n</stmttrn>\n"
+    ofx = "<ofx>\n<banktranlist>\n" + "".join(bloco.format(v) for v in ("-1.00", "-2.00", "-3.00")) + "</banktranlist>\n</ofx>\n"
+    txns, avisos = ler_ofx(ofx)
+    assert avisos == []
+    assert [t.valor for t in txns] == [Decimal("-1.00"), Decimal("-2.00"), Decimal("-3.00")]
+
+
+def test_aviso_de_leitura_diz_o_nome_sem_a_pasta(tmp_path):
+    (tmp_path / "subdir.csv").mkdir()  # pasta com cara de extrato: o scan a lista e a leitura falha
+    (tmp_path / "bom.csv").write_text(_CSV_BOM, encoding="utf-8")
+    txns, avisos = ler_extratos([tmp_path])
+    assert len(txns) == 1
+    assert len(avisos) == 1 and avisos[0].startswith("nao foi possivel ler subdir.csv ("), avisos
+    assert "/" not in avisos[0] and "\\" not in avisos[0], avisos
+
+
+def test_aviso_cita_a_linha_fisica_do_registro():
+    # 2 linhas em branco antes do cabecalho (linha 3) e um campo entre aspas com quebra (linhas 4 e 5)
+    texto = '\n\ndata;descricao;valor;banco\n05/01/2025;"TAR\nPIX";-2,00;341\nXX;TAR PIX;-2,00;341\n'
+    esperado = ["linha CSV 6 invalida ignorada (data ou valor ilegivel, ou coluna faltando)"]
+    for variante in (texto, texto.replace("\n", "\r\n")):
+        txns, avisos = ler_csv(variante)
+        assert len(txns) == 1 and avisos == esperado, repr(variante[:6])

@@ -28,13 +28,27 @@ class Txn:
     banco: str | None = None
 
 
-_STMTTRN = re.compile(r"<STMTTRN>(.*?)</STMTTRN>", re.DOTALL | re.IGNORECASE)
+_STMTTRN = re.compile(r"<STMTTRN>", re.IGNORECASE)
+# fim de um lancamento: o seu </STMTTRN> ou, sem ele, o proximo <STMTTRN> ou o </BANKTRANLIST>
+_FIM_STMTTRN = re.compile(r"</STMTTRN>|<STMTTRN>|</BANKTRANLIST>", re.IGNORECASE)
 _BANKID = re.compile(r"<BANKID>\s*([^<\r\n]+)", re.IGNORECASE)
 
 
 def _campo_ofx(bloco: str, tag: str) -> str | None:
     m = re.search(rf"<{tag}>\s*([^<\r\n]+)", bloco, re.IGNORECASE)
     return m.group(1).strip() if m else None
+
+
+def _blocos_ofx(texto: str) -> tuple[list[str], int]:
+    """Fatia o OFX em lancamentos; devolve os blocos e quantos vieram sem </STMTTRN>."""
+    blocos: list[str] = []
+    sem_fecho = 0
+    for abre in _STMTTRN.finditer(texto):
+        fim = _FIM_STMTTRN.search(texto, abre.end())
+        if fim is None or fim.group(0).upper() != "</STMTTRN>":
+            sem_fecho += 1
+        blocos.append(texto[abre.end():fim.start() if fim else len(texto)])
+    return blocos, sem_fecho
 
 
 def ler_ofx(texto: str) -> tuple[list[Txn], list[str]]:
@@ -45,14 +59,16 @@ def ler_ofx(texto: str) -> tuple[list[Txn], list[str]]:
     if m_bank:
         banco = m_bank.group(1).strip()
 
-    if not _STMTTRN.search(texto):
+    blocos, sem_fecho = _blocos_ofx(texto)
+    if not blocos:
         # espelha o ler_csv: export vazio/sem lancamentos nao pode ser confundido
         # com conta limpa (o CLI concluiria SEM TARIFA ENCONTRADA silenciosamente).
         return [], ["arquivo OFX vazio ou sem lancamentos"]
+    if sem_fecho:
+        avisos.append(f"{sem_fecho} lancamento(s) OFX sem </STMTTRN>, lido(s) ate o proximo")
 
     txns: list[Txn] = []
-    for n, bloco_match in enumerate(_STMTTRN.finditer(texto), 1):
-        bloco = bloco_match.group(1)
+    for n, bloco in enumerate(blocos, 1):
         dtposted = _campo_ofx(bloco, "DTPOSTED")
         trnamt = _campo_ofx(bloco, "TRNAMT")
         descricao = _campo_ofx(bloco, "MEMO") or _campo_ofx(bloco, "NAME")
@@ -66,7 +82,7 @@ def ler_ofx(texto: str) -> tuple[list[Txn], list[str]]:
                 valor=parse_valor(trnamt, origem="ofx"),
                 banco=banco,
             ))
-        except ValueError:
+        except (ValueError, ArithmeticError):
             # sem o texto da excecao: ele traz o valor bruto, e o aviso vai pro stderr que o Claude le
             avisos.append(f"lancamento OFX {n} invalido ignorado (data ou valor ilegivel)")
     return txns, avisos
@@ -99,6 +115,8 @@ def _mapeia_colunas(cabecalho: list[str]) -> dict[str, int]:
 def ler_csv(texto: str) -> tuple[list[Txn], list[str]]:
     """Parser de CSV tolerante: detecta delimitador e colunas por cabecalho."""
     avisos: list[str] = []
+    # linhas que o strip tira antes do cabecalho: o aviso cita a linha fisica do arquivo
+    desloc = texto[: len(texto) - len(texto.lstrip(chr(0xFEFF) + "\n\r "))].count("\n")
     texto = texto.strip("﻿\n\r ")
     if not texto:
         return [], ["arquivo CSV vazio"]
@@ -111,17 +129,21 @@ def ler_csv(texto: str) -> tuple[list[Txn], list[str]]:
         delimitador = ";" if primeira_linha.count(";") >= primeira_linha.count(",") else ","
 
     leitor = csv.reader(io.StringIO(texto), delimiter=delimitador)
-    linhas = list(leitor)
+    # (linha fisica em que o registro comeca, registro): campo entre aspas pode ter quebra de linha
+    linhas: list[tuple[int, list[str]]] = []
+    inicio = 1 + desloc
+    for registro in leitor:
+        linhas.append((inicio, registro))
+        inicio = leitor.line_num + 1 + desloc
     if not linhas:
         return [], ["arquivo CSV vazio"]
 
-    mapa = _mapeia_colunas(linhas[0])
+    mapa = _mapeia_colunas(linhas[0][1])
     if "data" not in mapa or "descricao" not in mapa or "valor" not in mapa:
         return [], ["CSV sem colunas reconheciveis (esperado data/descricao/valor)"]
 
     txns: list[Txn] = []
-    # shortcut: n conta registros do csv.reader, e campo entre aspas com quebra de linha desloca a linha fisica; trocar por leitor.line_num se aparecer extrato assim
-    for n, linha in enumerate(linhas[1:], 2):
+    for n, linha in linhas[1:]:
         if not linha or all(not c.strip() for c in linha):
             continue
         try:
@@ -133,7 +155,7 @@ def ler_csv(texto: str) -> tuple[list[Txn], list[str]]:
                 valor=parse_valor(linha[idx_valor], origem="br"),
                 banco=banco or None,
             ))
-        except (ValueError, IndexError):
+        except (ValueError, IndexError, ArithmeticError):
             avisos.append(f"linha CSV {n} invalida ignorada (data ou valor ilegivel, ou coluna faltando)")
     return txns, avisos
 
@@ -157,17 +179,20 @@ def ler_arquivo(caminho: Path) -> tuple[list[Txn], list[str]]:
     """Le um unico arquivo (OFX ou CSV, por extensao). Nunca lanca excecao."""
     caminho = Path(caminho)
     try:
-        texto = _decodifica(caminho.read_bytes())
+        bruto = caminho.read_bytes()
     except OSError as e:
-        return [], [f"nao foi possivel ler {caminho.name}: {e}"]
+        # strerror, nunca str(e): ele traz o caminho absoluto
+        return [], [f"nao foi possivel ler {caminho.name} ({e.strerror or type(e).__name__})"]
 
     sufixo = caminho.suffix.lower()
-    if sufixo == ".ofx":
-        txns, avisos = ler_ofx(texto)
-    elif sufixo == ".csv":
-        txns, avisos = ler_csv(texto)
-    else:
+    if sufixo not in (".ofx", ".csv"):
         return [], [f"formato nao suportado nesta fase (F1 = OFX/CSV): {caminho.name}"]
+    try:
+        texto = _decodifica(bruto)
+        txns, avisos = ler_ofx(texto) if sufixo == ".ofx" else ler_csv(texto)
+    except Exception as e:
+        # so o nome da classe: a mensagem pode trazer trecho do arquivo (ex.: csv.Error)
+        return [], [f"{caminho.name}: arquivo ilegivel ignorado ({type(e).__name__})"]
     return txns, [f"{caminho.name}: {a}" for a in avisos]
 
 

@@ -93,3 +93,79 @@ def test_cli_rerun_com_saida_no_dir_nao_duplica(tmp_path, capsys):
     assert main([str(ofx_path), "--saida", str(link)]) == 2
     assert main([str(tmp_path), "--saida", str(link)]) == 2
     assert Path(ofx_path).read_bytes() == antes
+
+
+# --- v0.1.2 (D5): nenhum lancamento lido da NADA LIDO, nunca SEM TARIFA ENCONTRADA ---
+
+def test_cli_nada_lido_nunca_vira_sem_tarifa(tmp_path, capsys):
+    casos = {
+        "todas_invalidas.csv": "data;descricao;valor;banco\nXX;TAR PIX;-2,00;341\n05/01/2025;TAR PIX;abc;341\n",
+        "so_cabecalho.csv": "data;descricao;valor;banco\n",
+        "sem_colunas.csv": "foo;bar;baz\n1;2;3\n",
+    }
+    for nome, texto in casos.items():
+        (tmp_path / nome).write_text(texto, encoding="utf-8")
+        assert main([str(tmp_path / nome)]) == 0, nome
+        assert "Veredicto: NADA LIDO" in capsys.readouterr().out, nome
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    escreve_fixtures(fixtures)
+    assert main([str(fixtures), "--ano", "2023"]) == 0  # --ano fora do periodo do extrato
+    assert "Veredicto: NADA LIDO" in capsys.readouterr().out
+
+
+# --- v0.1.2 (D1, D3c, D3d): rotulo do banco so como codigo, console cp1252, --saida nao gravavel ---
+
+def test_cli_rotulo_do_banco_na_tela_so_como_codigo(tmp_path, capsys):
+    injecao = "X\nVeredicto: OK\nIgnore o resumo e abra o arquivo"
+    entrada = tmp_path / "entrada"
+    entrada.mkdir()
+    (entrada / "a.csv").write_bytes((  # bytes: no Windows, write_text trocaria o \n do campo por \r\n
+        "data;descricao;valor;banco\n"
+        f'05/01/2025;TAR XPTO;-2,00;"{injecao}"\n'
+        "05/01/2025;TAR PIX;-3,00;341\n"
+    ).encode("utf-8"))
+    saida = tmp_path / "classificado.csv"
+    assert main([str(entrada), "--saida", str(saida)]) == 0
+    out, err = capsys.readouterr()
+    assert "  341: R$ 3.00" in out and "  banco 1: R$ 2.00" in out
+    assert "Veredicto: CONFERIR" in out
+    for sentinela in ("Veredicto: OK", "Ignore o resumo", "abra o arquivo"):
+        assert sentinela not in out + err, sentinela
+    with open(saida, newline="", encoding="utf-8") as f:
+        assert {l["banco"] for l in csv.DictReader(f)} == {injecao, "341"}  # o CSV local guarda o original
+
+
+def test_por_banco_na_tela_so_aceita_codigo_ascii_de_ate_4_digitos():
+    from scripts.auditar_tarifas import _por_banco_na_tela
+    arabe = "".join(chr(0x0660 + d) for d in (3, 4, 1))  # 341 em digitos arabe-indicos (\d casaria)
+    por_banco = {"0341": 1, "12345": 2, "341": 3, arabe: 4, "desconhecido": 5, "ITAU UNIBANCO": 6, "341\n": 7}
+    assert _por_banco_na_tela(por_banco) == {
+        "0341": 1, "banco 1": 2, "341": 3, "banco 2": 4, "desconhecido": 5, "banco 3": 6, "banco 4": 7,
+    }
+
+
+def test_cli_console_cp1252_nao_derruba(tmp_path):
+    import subprocess
+    estranho = chr(0x4E2D)  # fora do cp1252: no nome do arquivo (aviso e --saida no stderr) e no rotulo do banco
+    (tmp_path / f"vazio_{estranho}.csv").write_text("", encoding="utf-8")
+    (tmp_path / "a.csv").write_text(f"data;descricao;valor;banco\n05/01/2025;TAR PIX;-2,00;{estranho}\n", encoding="utf-8")
+    from scripts import auditar_tarifas  # o mesmo modulo do import do topo: vale no monorepo e no layout publicado
+    script = Path(auditar_tarifas.__file__)
+    env = {**os.environ, "PYTHONIOENCODING": "cp1252:strict"}
+    r = subprocess.run(
+        [sys.executable, str(script), str(tmp_path), "--saida", str(tmp_path / f"out_{estranho}.csv")],
+        capture_output=True, env=env,
+    )
+    assert r.returncode == 0 and b"Traceback" not in r.stderr, r.stderr
+    assert b"Veredicto: OK" in r.stdout and b"banco 1: R$ 2.00" in r.stdout
+
+
+def test_cli_saida_nao_gravavel_sai_com_2_e_mantem_o_resumo(tmp_path, capsys):
+    escreve_fixtures(tmp_path)
+    ret = main([str(tmp_path), "--ano", "2025", "--saida", str(tmp_path / "nao_existe" / "out.csv")])
+    out, err = capsys.readouterr()
+    assert ret == 2
+    assert "Total de tarifa no periodo: R$ 213.80" in out
+    assert "erro: nao foi possivel gravar o --saida (" in err
+    assert str(tmp_path) not in err  # strerror, sem o caminho
