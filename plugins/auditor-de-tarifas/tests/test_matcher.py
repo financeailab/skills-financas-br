@@ -152,3 +152,42 @@ def test_prefixo_tarifa_nao_quebra_ambiguidade():
     assert classifica("LIQUIDACAO DE BOLETO 5000,00") is None
     assert classifica("PAGTO PIX FORNECEDOR") is None
     assert classifica("OPE 12345 LIQUIDACAO") is None
+
+
+# --- v0.1.2 (D2): termo generico dentro de uma operacao, sem marcador, nao e tarifa ---
+
+def test_termo_generico_dentro_de_operacao_sem_marcador_nao_e_tarifa():
+    assert classifica("PIX ENVIADO CESTA BASICA X") is None
+    assert classifica("BOLETO ANUIDADE CONSELHO X") is None
+    assert classifica("PIX ENVIADO CONTA MAX LTDA") is None
+    assert classifica("PIX ENVIADO CONTA CERTA ME") is None
+    assert classifica("TED CUSTODIA X") is None
+    # limite aceito na spec (D2): tarifa real escrita com palavra de operacao e sem TAR deixa de somar
+    assert classifica("PAGTO ANUIDADE CARTAO") is None
+
+
+def test_veto_de_operacao_preserva_tarifa_e_termo_sozinho():
+    assert classifica("PIX ENVIADO MARIA TAR") == "outra_tarifa"
+    assert classifica("CUSTAS COBRANCA BOLETO") == "boleto"
+    assert classifica("SEGUNDA VIA BOLETO") == "saque_extrato"
+    assert classifica("TAR CESTA") == "manutencao"
+    assert classifica("CESTA EXPRESSO") == "manutencao"
+    assert classifica("ANUIDADE CARTAO") == "cartao"
+
+
+def test_quadro_da_peca_tarifa_pix_pj_mantem_a_classe():
+    # site/src/content/aprender/2026-11-05-tarifa-pix-pj/index.md:39-48 (classe medida na v0.1.1)
+    quadro = {
+        "PIX ENVIADO": None,
+        "PIX RECEBIDO": None,
+        "PAGTO PIX": None,
+        "PIX QR LIQ ESTATICO": None,
+        "TARIFA PIX ENVIO": "pix",
+        "TAR PIX PJ": "pix",
+        "TARIFA AVULSA ENVIO PIX": "pix",
+        "TARIFA PIX RECEBIDO QR CHECKOUT": "pix",
+        "TAR PIX QR LIQ ESTATICO": "pix",
+        "PAGTO PIX TARIFA": "pix",
+        "PIX ENVIADO TARIFA": "outra_tarifa",
+    }
+    assert {nome: classifica(nome) for nome in quadro} == quadro

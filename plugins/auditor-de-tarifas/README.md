@@ -1,6 +1,6 @@
 # Auditor de Tarifas
 
-Responde "quanto seu banco te cobrou de tarifa esse ano?". Você entrega o extrato do ano (OFX
+Responde "quanto seu banco te cobrou de tarifa esse ano?". Você indica o caminho do extrato do ano (OFX
 ou CSV, um por conta) e o motor Python soma as tarifas (manutenção, TED/DOC, Pix PJ, boleto,
 custódia, câmbio) por banco, mês e tipo, com o **IOF separado** (imposto, não tarifa). O número
 do ano é o argumento para renegociar a cesta PJ com o gerente ou para avaliar a portabilidade.
@@ -37,9 +37,10 @@ python scripts/auditar_tarifas.py <extrato.ofx> [<extrato2.csv> ...] [--ano 2025
 - **Terminal**: o motor lê o extrato no seu computador e nada sai dele.
 - **Claude Code, em sessão local**: basta dar o caminho do extrato, sem colar nem anexar o conteúdo.
   O motor lê o arquivo no disco e a skill foi feita para o Claude ler só o que ele imprime: o resumo
-  agregado, com o banco pelo rótulo que está no arquivo (o BANKID do OFX ou a coluna `banco` do CSV),
-  e avisos de linha ilegível que dizem só o arquivo e o número da linha, nunca o conteúdo dela. O seu
-  pedido, esse resumo e qualquer arquivo que o Claude abrir vão para a Anthropic.
+  agregado, com o banco pelo código numérico do arquivo (até 4 dígitos, do BANKID do OFX ou da coluna
+  `banco` do CSV; nome ou outro texto vira `banco 1`, `banco 2`, e o CSV do `--saida` guarda o
+  rótulo original), e avisos de linha ilegível que dizem só o arquivo e o número da linha, nunca o
+  conteúdo dela. O seu pedido, esse resumo e qualquer arquivo que o Claude abrir vão para a Anthropic.
 - **Cowork** (desde 06/10/2026, planos Pro, Max e Ultra) e **claude.ai** (web ou app): o trabalho
   roda na nuvem da Anthropic e o extrato sobe para lá. Nesse caso, anonimize o extrato ou rode
   no terminal ou no Claude Code em sessão local.
@@ -54,7 +55,8 @@ python scripts/auditar_tarifas.py <extrato.ofx> [<extrato2.csv> ...] [--ano 2025
 - Entrada OFX ou CSV. Extrato só em **PDF** fica fora deste motor.
 - Quando aparece lançamento com cara de tarifa que o dicionário não reconhece, o veredicto vira
   `CONFERIR` e ele mostra a pendência em vez de esconder. Se o extrato não tem termo de tarifa
-  reconhecível, ele diz `SEM TARIFA ENCONTRADA`: nunca inventa um número.
+  reconhecível, ele diz `SEM TARIFA ENCONTRADA`: nunca inventa um número. Se não leu nenhum
+  lançamento (formato, colunas ou `--ano` fora do período), ele diz `NADA LIDO` e repassa os avisos.
 - Somar tarifa é algo que uma planilha faz, desde que você tenha o dicionário de termos certo.
   Esta ferramenta traz o dicionário pronto e a soma determinística, não mágica.
 
