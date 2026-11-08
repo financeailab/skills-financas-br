@@ -18,7 +18,7 @@ import sys
 import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCRIPTS = os.path.join(os.path.dirname(HERE), "scripts")
+SCRIPTS = os.path.join(os.path.dirname(HERE), "skills", "conciliacao-bancaria", "scripts")
 CLI = os.path.join(SCRIPTS, "conciliar.py")
 sys.path.insert(0, os.path.join(SCRIPTS, "engine"))
 sys.path.insert(0, SCRIPTS)
