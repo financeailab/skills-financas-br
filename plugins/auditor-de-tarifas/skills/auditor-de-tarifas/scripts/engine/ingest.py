@@ -260,9 +260,13 @@ def listar_arquivos(caminhos: list[Path]) -> tuple[list[Path], list[str]]:
     return arquivos, avisos
 
 
-def ler_extratos(caminhos: list[Path]) -> tuple[list[Txn], list[str]]:
-    """Le uma lista de arquivos e/ou diretorios, agregando todas as txns."""
-    arquivos, todos_avisos = listar_arquivos(caminhos)
+def ler_extratos(caminhos: list[Path], lista: tuple[list[Path], list[str]] | None = None) -> tuple[list[Txn], list[str]]:
+    """Le uma lista de arquivos e/ou diretorios, agregando todas as txns.
+
+    `lista` e o retorno de um listar_arquivos ja feito: quem trava o --saida le a mesma listagem.
+    """
+    arquivos, avisos_da_lista = lista if lista is not None else listar_arquivos(caminhos)
+    todos_avisos = list(avisos_da_lista)  # copia: aviso de arquivo nunca entra na lista de quem chamou (a trava)
     todas_txns: list[Txn] = []
     if not arquivos:
         return [], todos_avisos + ["nenhum extrato encontrado"]

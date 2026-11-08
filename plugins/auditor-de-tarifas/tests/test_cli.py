@@ -213,7 +213,7 @@ def test_excecao_inesperada_sai_generica_sem_texto(tmp_path, monkeypatch, capsys
     import scripts.auditar_tarifas as cli
     import scripts.engine.ingest as ingest
 
-    def explode(_caminhos):
+    def explode(*_args):
         raise ValueError("valor nao-numerico: 'CANARIO SILVA 98765,43'")
 
     monkeypatch.setattr(ingest, "ler_extratos", explode)
@@ -304,6 +304,31 @@ def test_cli_lista_incompleta_nao_grava_o_saida(tmp_path, monkeypatch, capsys):
     assert err.splitlines() == ["aviso: nao foi possivel ler negada (Permission denied)",
                                 "erro: o --saida nao foi gravado (uma pasta de entrada nao pode ser listada)"]
     assert extrato.read_bytes() == b"<OFX>original</OFX>"
+
+
+def test_cli_trava_e_leitura_usam_a_mesma_listagem(tmp_path, monkeypatch, capsys):
+    # a pasta abre na 1a listagem e falha numa 2a: com duas listagens, o --saida saia parcial com rc 0
+    pasta = tmp_path / "pasta"
+    pasta.mkdir()
+    (pasta / "a.csv").write_text(_TARIFA_30, encoding="utf-8")
+    saida = tmp_path / "out.csv"
+    original = Path.iterdir
+    chamadas = []
+
+    def abre_so_na_primeira(self, *a, **k):
+        if self == pasta:
+            chamadas.append(self)
+            if len(chamadas) > 1:
+                raise PermissionError(13, "Permission denied", str(self))
+        return original(self, *a, **k)
+
+    monkeypatch.setattr(Path, "iterdir", abre_so_na_primeira)
+    assert main([str(pasta), "--saida", str(saida)]) == 0
+    out, err = capsys.readouterr()
+    assert "Total de tarifa no periodo: R$ 30.00" in out
+    assert "nao foi possivel ler" not in err
+    assert saida.exists()
+    assert len(chamadas) == 1
 
 
 def test_cli_caminho_sem_nome_avisa_com_rotulo_fixo(tmp_path, monkeypatch, capsys):

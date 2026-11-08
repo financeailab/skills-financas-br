@@ -81,6 +81,8 @@ def main(argv: list[str] | None = None) -> int:
     sys.stderr.reconfigure(errors="replace")
     args = _parse_args(argv)
     caminhos = [Path(e) for e in args.extratos]
+    lista = listar_arquivos(caminhos)  # uma listagem so: a trava do --saida e a leitura veem a mesma pasta
+    arquivos, avisos_da_lista = lista
 
     if args.saida:
         destino = os.path.normcase(os.path.realpath(args.saida))
@@ -92,12 +94,11 @@ def main(argv: list[str] | None = None) -> int:
             # hard link: caminho diferente, mesmo arquivo no disco
             return existe and os.path.exists(a) and os.path.samefile(args.saida, a)
 
-        arquivos, avisos_da_lista = listar_arquivos(caminhos)  # os avisos saem pelo ler_extratos
         if any(_mesmo(a) for a in arquivos):
             print("erro: --saida aponta para um extrato de entrada; escolha outro caminho", file=sys.stderr)
             return 2
 
-    txns, avisos = ler_extratos(caminhos)
+    txns, avisos = ler_extratos(caminhos, lista)  # os avisos da lista saem por aqui, antes dos de cada arquivo
     for aviso in avisos:
         print(f"aviso: {aviso}", file=sys.stderr)
 
