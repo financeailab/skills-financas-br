@@ -74,6 +74,9 @@ def _formata_tabela(mapa: dict, titulo: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # console que nao representa um caractere (cp1252 no Windows) troca por '?' em vez de derrubar o run
+    sys.stdout.reconfigure(errors="replace")
+    sys.stderr.reconfigure(errors="replace")
     args = _parse_args(argv)
     caminhos = [Path(e) for e in args.extratos]
 
@@ -133,8 +136,19 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+# Template literal de checar_saida_sem_dado.py (_TEMPLATE_MAIN): o texto de excecao, de SystemExit ou
+# de retorno de main() pode trazer conteudo do extrato, entao nada disso chega a saida.
 if __name__ == "__main__":
-    # console que nao representa um caractere (cp1252 no Windows) troca por '?' em vez de derrubar o run
-    sys.stdout.reconfigure(errors="replace")
-    sys.stderr.reconfigure(errors="replace")
-    raise SystemExit(main())
+    import sys as _sys
+    _sys.unraisablehook = lambda _u: None
+    _codigo = 2
+    try:
+        _codigo = main()
+    except SystemExit as _e:
+        _codigo = _e.code
+    except BaseException:
+        try:
+            _sys.stderr.write("erro inesperado; o detalhe nao e impresso para nao expor o arquivo\n")
+        except BaseException:
+            pass
+    raise SystemExit(_codigo if _codigo.__class__ is int else (0 if _codigo is None else 2))

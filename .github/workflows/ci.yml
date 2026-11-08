@@ -32,6 +32,8 @@ jobs:
       - run: pip install pytest
       - run: python -m pytest -q ferramentas/test_checar_sem_rede.py
       - run: python ferramentas/checar_sem_rede.py plugins/
+      - run: python -m pytest -q ferramentas/test_checar_saida_sem_dado.py
+      - run: python ferramentas/checar_saida_sem_dado.py plugins/
 
   plugin-validate:
     runs-on: ubuntu-latest
