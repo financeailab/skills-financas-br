@@ -245,3 +245,82 @@ def test_aviso_cita_a_linha_fisica_do_registro():
     for variante in (texto, texto.replace("\n", "\r\n")):
         txns, avisos = ler_csv(variante)
         assert len(txns) == 1 and avisos == esperado, repr(variante[:6])
+
+
+# --- v0.1.4 (D2, D8): lancamento sem fecho termina no agregado que o contem ou num irmao; dois bancos avisam ---
+
+from datetime import date
+
+_PIX_SEM_FECHO = (
+    "<OFX><BANKMSGSRSV1><STMTTRNRS><STMTRS><BANKACCTFROM><BANKID>0341<ACCTID>1</BANKACCTFROM>\n<BANKTRANLIST>\n"
+    "<STMTTRN><DTPOSTED>20250105<TRNAMT>-30.00<MEMO>TARIFA PACOTE SERVICOS</STMTTRN>\n"
+    "<STMTTRN><DTPOSTED>20250110<TRNAMT>-5000.00<NAME>PIX ENVIADO FORNECEDOR\n"
+)
+_ESPERADO_D2 = [("TARIFA PACOTE SERVICOS", Decimal("-30.00")), ("PIX ENVIADO FORNECEDOR", Decimal("-5000.00"))]
+_AVISO_SEM_FECHO = ["1 lancamento(s) OFX sem </STMTTRN>, lido(s) ate o proximo"]
+# a lista da spec (D2), escrita aqui de novo: um terminador que falte na regex reprova
+_TERMINADORES_D2 = (
+    "</BANKTRANLIST>", "</STMTRS>", "</CCSTMTRS>", "</STMTTRNRS>", "</CCSTMTTRNRS>", "</BANKMSGSRSV1>",
+    "</CREDITCARDMSGSRSV1>", "</OFX>", "<BANKTRANLISTP>", "<LEDGERBAL>", "<AVAILBAL>", "<CASHADVBALAMT>",
+    "<INTRATE>", "<INTRATEPURCH>", "<INTRATECASH>", "<INTRATEXFER>", "<REWARDINFO>", "<BALLIST>", "<MKTGINFO>",
+    "<BANKTRANLIST>", "<STMTRS>", "<CCSTMTRS>", "<STMTTRNRS>", "<CCSTMTTRNRS>", "<CREDITCARDMSGSRSV1>",
+    "<INVSTMTMSGSRSV1>",
+)
+
+
+def test_ofx_sem_fecho_termina_em_cada_terminador_do_d2():
+    for tag in _TERMINADORES_D2:
+        for t in (tag, tag.lower()):
+            txns, avisos = ler_ofx(_PIX_SEM_FECHO + t + "\n<MEMO>TARIFA MANUTENCAO CONTA\n")
+            assert [(x.descricao, x.valor) for x in txns] == _ESPERADO_D2, t
+            assert avisos == _AVISO_SEM_FECHO, t
+
+
+def test_ofx_pendente_depois_do_lancamento_sem_fecho_fica_fora():
+    for rs in ("STMTRS", "CCSTMTRS"):
+        ofx = (_PIX_SEM_FECHO.replace("<STMTRS>", f"<{rs}>")
+               + "<BANKTRANLISTP><STMTTRNP><DTTRAN>20250111<TRNAMT>-9.90<MEMO>TARIFA MANUTENCAO CONTA</STMTTRNP>"
+               + f"</BANKTRANLISTP></{rs}></STMTTRNRS></BANKMSGSRSV1></OFX>\n")
+        txns, avisos = ler_ofx(ofx)
+        assert [(x.descricao, x.valor) for x in txns] == _ESPERADO_D2, rs
+        assert avisos == _AVISO_SEM_FECHO, rs
+
+
+def test_ofx_agregado_dentro_do_lancamento_nao_corta():
+    internos = (
+        "<PAYEE><NAME>BANCO X<ADDR1>RUA 1</PAYEE>",
+        "<BANKACCTTO><BANKID>237<ACCTID>9<ACCTTYPE>CHECKING</BANKACCTTO>",
+        "<CCACCTTO><ACCTID>9</CCACCTTO>",
+        "<CURRENCY><CURRATE>1.0<CURSYM>BRL</CURRENCY>",
+        "<ORIGCURRENCY><CURRATE>1.0<CURSYM>BRL</ORIGCURRENCY>",
+        "<IMAGEDATA><IMAGETYPE>STATEMENT<IMAGEREF>X<IMAGEREFTYPE>OPAQUE</IMAGEDATA>",
+    )
+    for interno in internos:
+        for fecho in ("</STMTTRN>", ""):
+            txns, _ = ler_ofx(f"<OFX><BANKTRANLIST><STMTTRN>{interno}<DTPOSTED>20250105<TRNAMT>-30.00"
+                              f"<MEMO>TARIFA PACOTE SERVICOS{fecho}</BANKTRANLIST></OFX>")
+            assert [(x.data, x.descricao, x.valor) for x in txns] == [
+                (date(2025, 1, 5), "TARIFA PACOTE SERVICOS", Decimal("-30.00"))], (interno, fecho)
+
+
+def test_ofx_com_dois_bancos_avisa_e_cartao_ou_ted_do_mesmo_arquivo_nao():
+    def extrato(rs, conta, meio=""):
+        return (f"<{rs}>{conta}<BANKTRANLIST><STMTTRN><DTPOSTED>20250105<TRNAMT>-30.00{meio}"
+                f"<MEMO>TARIFA PACOTE SERVICOS</STMTTRN></BANKTRANLIST></{rs}>")
+    c341 = "<BANKACCTFROM><BANKID>341<ACCTID>1</BANKACCTFROM>"
+    txns, avisos = ler_ofx("<OFX>" + extrato("STMTRS", c341)
+                           + extrato("STMTRS", "<BANKACCTFROM><BANKID>237<ACCTID>2</BANKACCTFROM>") + "</OFX>")
+    assert [x.banco for x in txns] == ["341", "341"]
+    assert avisos == ["mais de um banco no mesmo OFX; todos entram com o codigo do primeiro"]
+    # comentario ou outro campo antes do BANKID: ainda e a conta do extrato
+    for antes in ("<!-- conta -->", "<BRANCHID>1"):  # "0001" casaria o detector de agencia do exportar.cjs
+        txns, avisos = ler_ofx("<OFX>" + extrato("STMTRS", c341) + extrato(
+            "STMTRS", f"<BANKACCTFROM>{antes}<BANKID>237<ACCTID>2</BANKACCTFROM>") + "</OFX>")
+        assert avisos == ["mais de um banco no mesmo OFX; todos entram com o codigo do primeiro"], antes
+    txns, avisos = ler_ofx("<OFX>" + extrato("STMTRS", c341)
+                           + extrato("CCSTMTRS", "<CCACCTFROM><ACCTID>3</CCACCTFROM>") + "</OFX>")
+    assert [x.banco for x in txns] == ["341", "341"] and avisos == []
+    # TED para outro banco: o BANKID do BANKACCTTO e o destino, nao o banco do extrato
+    txns, avisos = ler_ofx("<OFX>" + extrato("STMTRS", c341, "<BANKACCTTO><BANKID>237<ACCTID>9</BANKACCTTO>")
+                           + "</OFX>")
+    assert [x.banco for x in txns] == ["341"] and avisos == []
