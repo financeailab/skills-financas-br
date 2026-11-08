@@ -5,6 +5,8 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from gen_extrato_tarifas import escreve_fixtures
@@ -169,3 +171,57 @@ def test_cli_saida_nao_gravavel_sai_com_2_e_mantem_o_resumo(tmp_path, capsys):
     assert "Total de tarifa no periodo: R$ 213.80" in out
     assert "erro: nao foi possivel gravar o --saida (" in err
     assert str(tmp_path) not in err  # strerror, sem o caminho
+
+
+# Teste-canario (doutrina: delta-motor-python.md, "Saida sem texto do arquivo"): nome e valor marcadores em
+# toda coluna de lancamento, em linha valida e invalida, inclusive no rotulo do banco (o #196 so mostra codigo).
+_CSV_CANARIO = (
+    "data;descricao;valor;banco;contraparte;conta\n"
+    "05/01/2025;TAR PIX CANARIO SILVA;-2,00;CANARIO SILVA;CANARIO SILVA;98765-43\n"
+    "06/01/2025;PIX ENVIADO CANARIO SILVA;-98765,43;CANARIO SILVA;CANARIO SILVA;98765-43\n"
+    "CANARIO SILVA;TAR PIX;-2,00;CANARIO SILVA;CANARIO SILVA;98765-43\n"
+    "07/01/2025;TAR PIX CANARIO SILVA;CANARIO SILVA 98765,43;CANARIO SILVA;CANARIO SILVA;98765-43\n"
+    "08/01/2025;TAR PIX CANARIO SILVA\n"
+)
+_STMT = "<STMTTRN>\n<TRNTYPE>DEBIT\n{}<FITID>CANARIO98765\n<CHECKNUM>98765\n<NAME>CANARIO SILVA\n</STMTTRN>\n"
+_OFX_CANARIO = (
+    "<OFX>\n<BANKID>341\n<ACCTID>CANARIO98765\n"
+    + _STMT.format("<DTPOSTED>20250110\n<TRNAMT>-2.00\n<MEMO>TAR PIX CANARIO SILVA\n")
+    + _STMT.format("<DTPOSTED>20250111\n<TRNAMT>-98765.43\n<MEMO>TED CANARIO SILVA\n")
+    + _STMT.format("<DTPOSTED>CANARIO SILVA\n<TRNAMT>-2.00\n<MEMO>TAR PIX CANARIO SILVA\n")
+    + _STMT.format("<DTPOSTED>20250112\n<TRNAMT>CANARIO SILVA 98765,43\n<MEMO>TAR PIX\n")
+    + _STMT.format("<DTPOSTED>20250113\n<MEMO>TAR PIX CANARIO SILVA\n")
+    + "</OFX>\n"
+)
+
+
+def test_canario_nenhum_texto_do_extrato_na_saida(tmp_path, capsys):
+    (tmp_path / "canario.csv").write_text(_CSV_CANARIO, encoding="utf-8")
+    (tmp_path / "canario.ofx").write_text(_OFX_CANARIO, encoding="utf-8")
+    assert main([str(tmp_path)]) == 0
+    saida = capsys.readouterr()
+    tudo = saida.out + saida.err
+    assert "R$ 4.00" in saida.out  # as 2 tarifas validas foram lidas
+    assert saida.err.count("aviso:") == 6  # e os caminhos de aviso foram exercitados
+    assert "CANARIO" not in tudo
+    assert "98765" not in tudo
+
+
+def test_excecao_inesperada_sai_generica_sem_texto(tmp_path, monkeypatch, capsys):
+    import runpy
+
+    import scripts.auditar_tarifas as cli
+    import scripts.engine.ingest as ingest
+
+    def explode(_caminhos):
+        raise ValueError("valor nao-numerico: 'CANARIO SILVA 98765,43'")
+
+    monkeypatch.setattr(ingest, "ler_extratos", explode)
+    monkeypatch.setattr(sys, "argv", ["auditar_tarifas.py", str(tmp_path)])
+    with pytest.raises(SystemExit) as fim:
+        runpy.run_path(cli.__file__, run_name="__main__")
+    saida = capsys.readouterr()
+    assert fim.value.code == 2
+    assert "erro inesperado" in saida.err
+    assert "CANARIO" not in saida.out + saida.err
+    assert "98765" not in saida.out + saida.err
