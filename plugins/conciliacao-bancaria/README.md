@@ -101,6 +101,9 @@ python scripts/conciliar.py posicao --pasta PASTA_DE_OFX --sheet ID_DA_PLANILHA
 - **A classificação das pendências é heurística** (palavras-chave e sinal): trate como
   sugestão, não como certeza. Se a amarração de saldo não fechar, o relatório avisa que há
   erro de integridade a investigar; não confie nos números antes disso.
+- **O relatório mostra o lado do banco.** Cada lançamento conciliado aparece com o registro do extrato; o título do
+  razão que casou com ele, e os títulos que formam um lote, não aparecem ao lado. Para ver qual título foi usado,
+  sobretudo nas linhas marcadas para conferir, procure no razão pela data e pelo valor.
 - **Crédito do banco sem correspondente no razão** fica pendente: a ferramenta cobre contas a
   pagar, e o lado de recebíveis é responsabilidade de quem opera.
 - Alguns bancos (por exemplo Bradesco, Santander e Banco do Brasil) exportam o OFX com saldo
