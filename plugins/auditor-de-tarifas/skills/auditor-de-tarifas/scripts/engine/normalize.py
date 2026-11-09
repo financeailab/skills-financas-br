@@ -21,6 +21,10 @@ CENTAVO = Decimal("0.01")
 
 
 _MILHAR_BR = re.compile(r"\d{1,3}(\.\d{3})+")  # 1.234 / 12.500 / 1.234.567 (grupo de milhar BR)
+# ponto E virgula juntos: o ULTIMO separador e o decimal e os agrupamentos tem 3 digitos
+# BR: o 1o grupo e livre (ha OFX real que escreve 1234.567,89 em valor de 7 digitos); os grupos APOS o ponto tem 3 digitos
+_AMBOS_BR = re.compile(r"\d+(\.\d{3})+,\d{1,2}")           # 1.234,56 / 1234.567,89
+_AMBOS_INTL = re.compile(r"\d{1,3}(,\d{3})+\.\d{1,2}")  # 1,234.56
 
 
 def parse_valor(raw, origem: str = "auto") -> Decimal:
@@ -31,6 +35,8 @@ def parse_valor(raw, origem: str = "auto") -> Decimal:
       - "br"/"auto": ponto pode ser milhar BR. Um valor que casa o padrao de milhar
         (`1.234`, `12.500`, `1.234.567`) e tratado como milhar; corrige o erro 1000x
         de `"1.234"` virar 1,23 na razao digitada por humano (achado da revisao).
+    Ponto e virgula juntos (qualquer origem): o ULTIMO separador e o decimal (`1.234,56` BR,
+    `1,234.56` internacional) e os agrupamentos tem 3 digitos; fora disso, ValueError.
     Sinal: aceita '-' a esquerda, '-' a direita (convencao Itau, ex.: "89,90-") ou
     parenteses contabeis "(1.234,56)".
     """
@@ -53,7 +59,12 @@ def parse_valor(raw, origem: str = "auto") -> Decimal:
 
     has_dot, has_comma = "." in s, "," in s
     if has_dot and has_comma:
-        s = s.replace(".", "").replace(",", ".")           # BR: ponto=milhar, virgula=decimal
+        if s.rfind(",") > s.rfind(".") and _AMBOS_BR.fullmatch(s):
+            s = s.replace(".", "").replace(",", ".")       # BR: ponto=milhar, virgula=decimal
+        elif s.rfind(".") > s.rfind(",") and _AMBOS_INTL.fullmatch(s):
+            s = s.replace(",", "")                         # internacional: virgula=milhar, ponto=decimal
+        else:
+            raise ValueError(f"valor nao-numerico: {raw!r}")   # agrupamento invalido (1,23.4): nao adivinha
     elif has_comma:
         s = s.replace(",", ".")                              # BR: virgula=decimal
     elif has_dot:
