@@ -1,0 +1,17 @@
+{
+  "_descricao": "Gabarito do cenario sintetico jan/2026 (extrato_sintetico.ofx x razao_sintetico.csv). Substituir por um par real anonimizado no Estagio B.",
+  "saldo_razao_final": "12467.50",
+  "esperado": {
+    "contagem": {
+      "CONCILIADO": 7,
+      "CONCILIADO_COM_DIFERENCA": 1,
+      "PENDENTE_EXTRATO": 3,
+      "PENDENTE_RAZAO": 2
+    },
+    "total_extrato": "1943.35",
+    "total_razao": "2467.50",
+    "saldo_extrato_final": "11943.35",
+    "amarracao_fecha": true,
+    "residuo": "0.00"
+  }
+}

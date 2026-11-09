@@ -1,0 +1,24 @@
+# Conciliacao Bancaria — dependencias LOCAIS da ingestao multi-formato (SPEC-01/04).
+# Tudo roda na maquina da pessoa; NENHUMA chamada de rede (o fosso de privacidade).
+# O motor degrada gracioso se uma faltar (PDF/XLSX -> status claro, nunca quebra),
+# mas a cobertura completa precisa destas.
+#
+# Instalacao (Claude Desktop/Cowork, no terminal da pessoa):
+#   pip install -r requirements.txt
+#
+# OCR (escaneado/imagem, SPEC-02) NAO entra aqui: e o binario Tesseract, opcional e
+# instalado a parte; sem ele, esses arquivos viram status PRECISA_OCR (skip-safe).
+
+openpyxl>=3.1     # .xlsx (lado banco e razao)
+xlrd>=2.0         # .xls antigo (BIFF) — ex.: Caixa
+pdfplumber>=0.11  # PDF-texto (puxa pdfminer.six + Pillow)
+pypdf>=4.0        # fallback de extracao quando o pdfminer estoura
+# stdlib (sem pip): csv, html.parser (CSV e XLS-disfarcado-de-HTML)
+
+# --- OCR local (SPEC-02), OPT-IN (--ocr) p/ imagem e PDF escaneado ---
+# Sem isto (ou sem o binario Tesseract), imagem/escaneado viram PRECISA_OCR (skip-safe).
+pytesseract>=0.3  # ponte p/ o Tesseract (precisa do BINARIO tesseract instalado a parte)
+pypdfium2>=4.0    # render de PDF -> imagem (wheel puro, sem binario de sistema)
+# Binario do Tesseract (NAO e pip): Windows `winget install UB-Mannheim.TesseractOCR`;
+#   Linux `apt install tesseract-ocr`; macOS `brew install tesseract`. Idioma 'por' opcional
+#   (sem ele, usa 'eng' — digitos/datas/valores leem bem).
