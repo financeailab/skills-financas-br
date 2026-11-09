@@ -4,7 +4,7 @@ Este é o resultado de conciliar o `extrato.ofx` contra o `razao.csv` deste exem
 (Comércio Alfa, janeiro/2026), com **saldo final do razão = R$ 17.690,00**.
 
 Use isto para conferir que a skill está rodando certo na sua máquina: rode a demo e
-compare os números abaixo. (No terminal, nada sai do seu computador. No Claude Code em sessão local, o Claude recebe só o resumo agregado. No Cowork e no claude.ai, o arquivo sobe para a nuvem da Anthropic.)
+compare os números abaixo. (No terminal, nada sai do seu computador. No Claude Code em sessão local, a skill foi feita para o Claude ler só o resumo agregado, mas o seu pedido, esse resumo e qualquer arquivo que o Claude abrir vão para a Anthropic. No Cowork e no claude.ai, o arquivo sobe para a nuvem da Anthropic.)
 
 ## Comando
 
@@ -53,5 +53,5 @@ Se não fechar, há erro de integridade a investigar — a skill avisa, não maq
 
 O detalhe linha-a-linha fica em `resultado/conciliacao.xlsx` (ou `.csv` se você não
 tiver o `openpyxl`), com a **categoria** e a **ação sugerida** de cada pendência.
-Esse arquivo é seu, fica no seu computador. No Claude Code em sessão local, o Claude lê só o
-`resumo.json` agregado, nunca os seus lançamentos.
+Esse arquivo é seu, fica no seu computador. No Claude Code em sessão local, a skill foi feita
+para o Claude ler só o `resumo.json` agregado, não os seus lançamentos.
