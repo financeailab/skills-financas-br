@@ -213,7 +213,7 @@ def test_excecao_inesperada_sai_generica_sem_texto(tmp_path, monkeypatch, capsys
     import scripts.auditar_tarifas as cli
     import scripts.engine.ingest as ingest
 
-    def explode(_caminhos):
+    def explode(*_args):
         raise ValueError("valor nao-numerico: 'CANARIO SILVA 98765,43'")
 
     monkeypatch.setattr(ingest, "ler_extratos", explode)
@@ -225,3 +225,178 @@ def test_excecao_inesperada_sai_generica_sem_texto(tmp_path, monkeypatch, capsys
     assert "erro inesperado" in saida.err
     assert "CANARIO" not in saida.out + saida.err
     assert "98765" not in saida.out + saida.err
+
+
+# --- v0.1.4 (D1): caminho que nao da para listar vira aviso; lista incompleta nao grava o --saida ---
+
+_TARIFA_30 = "data;descricao;valor\n05/01/2025;TARIFA PACOTE SERVICOS;-30,00\n"
+
+
+def _nega(monkeypatch, *alvos):
+    original = Path.iterdir
+
+    def falha(self, *a, **k):
+        if self in alvos:
+            raise PermissionError(13, "Permission denied", str(self))
+        return original(self, *a, **k)
+
+    monkeypatch.setattr(Path, "iterdir", falha)
+
+
+def _pasta_negada_e_bom(tmp_path, monkeypatch):
+    negada = tmp_path / "negada"
+    negada.mkdir()
+    bom = tmp_path / "bom.csv"
+    bom.write_text(_TARIFA_30, encoding="utf-8")
+    _nega(monkeypatch, negada)
+    return negada, bom
+
+
+def test_cli_pasta_sem_permissao_vira_aviso_e_le_o_resto(tmp_path, monkeypatch, capsys):
+    negada, bom = _pasta_negada_e_bom(tmp_path, monkeypatch)
+    assert main([str(negada), str(bom)]) == 0
+    out, err = capsys.readouterr()
+    assert "Total de tarifa no periodo: R$ 30.00" in out
+    assert err.splitlines() == ["aviso: nao foi possivel ler negada (Permission denied)"]
+
+
+def test_cli_so_a_pasta_sem_permissao_da_nada_lido(tmp_path, monkeypatch, capsys):
+    negada, _ = _pasta_negada_e_bom(tmp_path, monkeypatch)
+    assert main([str(negada)]) == 0
+    out, err = capsys.readouterr()
+    assert "Veredicto: NADA LIDO" in out
+    assert err.splitlines() == ["aviso: nao foi possivel ler negada (Permission denied)",
+                                "aviso: nenhum extrato encontrado"]
+
+
+def test_cli_arquivo_inexistente_segue_como_antes_e_nao_trava_o_saida(tmp_path, capsys):
+    bom = tmp_path / "bom.csv"
+    bom.write_text(_TARIFA_30, encoding="utf-8")
+    saida = tmp_path / "out.csv"
+    assert main([str(tmp_path / "nao_existe.ofx"), str(bom), "--saida", str(saida)]) == 0
+    out, err = capsys.readouterr()
+    assert "Total de tarifa no periodo: R$ 30.00" in out
+    assert err.splitlines()[0].startswith("aviso: nao foi possivel ler nao_existe.ofx (")
+    assert saida.exists()
+
+
+def test_cli_consulta_que_falha_no_python_314_tambem_trava_o_saida(tmp_path, monkeypatch, capsys):
+    negada, bom = _pasta_negada_e_bom(tmp_path, monkeypatch)
+    saida = tmp_path / "out.csv"
+    # o is_dir do Python novo (3.14 confirmado) devolve False quando a consulta falha: o codigo nao pode depender dele
+    is_dir = Path.is_dir
+    monkeypatch.setattr(Path, "is_dir", lambda self, *a, **k: False if self == negada else is_dir(self, *a, **k))
+    assert main([str(negada), str(bom), "--saida", str(saida)]) == 2
+    out, err = capsys.readouterr()
+    assert "Total de tarifa no periodo: R$ 30.00" in out
+    assert err.splitlines() == ["aviso: nao foi possivel ler negada (Permission denied)",
+                                "erro: o --saida nao foi gravado (uma pasta de entrada nao pode ser listada)"]
+    assert not saida.exists()
+
+
+def test_cli_lista_incompleta_nao_grava_o_saida(tmp_path, monkeypatch, capsys):
+    negada, bom = _pasta_negada_e_bom(tmp_path, monkeypatch)
+    extrato = negada / "extrato.ofx"
+    extrato.write_bytes(b"<OFX>original</OFX>")
+    assert main([str(negada), str(bom), "--saida", str(extrato)]) == 2
+    out, err = capsys.readouterr()
+    assert "Total de tarifa no periodo: R$ 30.00" in out
+    assert err.splitlines() == ["aviso: nao foi possivel ler negada (Permission denied)",
+                                "erro: o --saida nao foi gravado (uma pasta de entrada nao pode ser listada)"]
+    assert extrato.read_bytes() == b"<OFX>original</OFX>"
+
+
+def test_cli_trava_e_leitura_usam_a_mesma_listagem(tmp_path, monkeypatch, capsys):
+    # a pasta abre na 1a listagem e falha numa 2a: com duas listagens, o --saida saia parcial com rc 0
+    pasta = tmp_path / "pasta"
+    pasta.mkdir()
+    (pasta / "a.csv").write_text(_TARIFA_30, encoding="utf-8")
+    saida = tmp_path / "out.csv"
+    original = Path.iterdir
+    chamadas = []
+
+    def abre_so_na_primeira(self, *a, **k):
+        if self == pasta:
+            chamadas.append(self)
+            if len(chamadas) > 1:
+                raise PermissionError(13, "Permission denied", str(self))
+        return original(self, *a, **k)
+
+    monkeypatch.setattr(Path, "iterdir", abre_so_na_primeira)
+    assert main([str(pasta), "--saida", str(saida)]) == 0
+    out, err = capsys.readouterr()
+    assert "Total de tarifa no periodo: R$ 30.00" in out
+    assert "nao foi possivel ler" not in err
+    assert saida.exists()
+    assert len(chamadas) == 1
+
+
+def test_cli_caminho_sem_nome_avisa_com_rotulo_fixo(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    raiz = Path(tmp_path.anchor)
+    _nega(monkeypatch, Path("."), raiz)
+    assert main([".", str(raiz)]) == 0
+    assert capsys.readouterr().err.splitlines()[:2] == [
+        "aviso: nao foi possivel ler o caminho indicado (Permission denied)"] * 2
+
+
+@pytest.mark.skipif(os.name == "nt" or os.geteuid() == 0, reason="chmod 000 so barra quem nao e root, fora do Windows")
+def test_cli_pasta_real_sem_permissao_no_linux(tmp_path, capsys):
+    negada = tmp_path / "negada"
+    negada.mkdir()
+    (negada / "a.csv").write_text(_TARIFA_30, encoding="utf-8")
+    bom = tmp_path / "bom.csv"
+    bom.write_text(_TARIFA_30, encoding="utf-8")
+    negada.chmod(0)
+    try:
+        assert main([str(negada), str(bom)]) == 0
+    finally:
+        negada.chmod(0o755)
+    out, err = capsys.readouterr()
+    assert "Total de tarifa no periodo: R$ 30.00" in out
+    assert err.splitlines() == ["aviso: nao foi possivel ler negada (Permission denied)"]
+
+
+# --- v0.1.4 (D3): o --banco aparece como foi digitado; o rotulo do arquivo segue so como codigo ---
+
+
+def _linhas_por_banco(out):
+    linhas = out.splitlines()
+    i = linhas.index("Por banco:")
+    return [l.strip() for l in linhas[i + 1:linhas.index("", i)]]
+
+
+def test_cli_banco_digitado_aparece_na_tela(tmp_path, capsys):
+    bom = tmp_path / "bom.csv"
+    bom.write_text(_TARIFA_30, encoding="utf-8")
+    assert main([str(bom), "--banco", "itau"]) == 0
+    assert _linhas_por_banco(capsys.readouterr().out) == ["itau: R$ 30.00"]
+
+
+def test_cli_banco_digitado_nao_libera_o_rotulo_do_arquivo(tmp_path, capsys):
+    a = tmp_path / "a.csv"
+    a.write_text("data;descricao;valor;banco\n05/01/2025;TARIFA PACOTE SERVICOS;-30,00;Banco X\n"
+                 "06/01/2025;TARIFA PACOTE SERVICOS;-20,00;\n", encoding="utf-8")
+    assert main([str(a), "--banco", "itau"]) == 0
+    out, err = capsys.readouterr()
+    assert _linhas_por_banco(out) == ["banco 1: R$ 30.00", "itau: R$ 20.00"]
+    assert "Banco X" not in out + err
+
+
+def test_cli_banco_digitado_como_banco_n_nao_funde_dois_bancos(tmp_path, capsys):
+    a = tmp_path / "a.csv"
+    a.write_text("data;descricao;valor;banco\n05/01/2025;TARIFA PACOTE SERVICOS;-30,00;Y\n"
+                 "06/01/2025;TARIFA PACOTE SERVICOS;-20,00;\n", encoding="utf-8")
+    assert main([str(a), "--banco", "banco 1"]) == 0
+    assert _linhas_por_banco(capsys.readouterr().out) == ["banco 1: R$ 20.00", "banco 2: R$ 30.00"]
+
+
+def test_cli_banco_digitado_reserva_o_numero_em_qualquer_ordem(tmp_path, capsys):
+    linhas = ["05/01/2025;TARIFA PACOTE SERVICOS;-1,00;A", "05/01/2025;TARIFA PACOTE SERVICOS;-2,00;B",
+              "05/01/2025;TARIFA PACOTE SERVICOS;-3,00;C", "05/01/2025;TARIFA PACOTE SERVICOS;-4,00;"]
+    for ordem in (linhas, linhas[-1:] + linhas[:-1]):
+        a = tmp_path / "a.csv"
+        a.write_text("data;descricao;valor;banco\n" + "\n".join(ordem) + "\n", encoding="utf-8")
+        assert main([str(a), "--banco", "banco 2"]) == 0
+        assert _linhas_por_banco(capsys.readouterr().out) == [
+            "banco 1: R$ 1.00", "banco 2: R$ 4.00", "banco 3: R$ 2.00", "banco 4: R$ 3.00"], ordem[0]

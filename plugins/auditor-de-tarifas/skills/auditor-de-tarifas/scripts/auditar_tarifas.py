@@ -48,17 +48,19 @@ def _grava_csv_local(caminho: str, txns_classificadas: list) -> None:
 _CODIGO_BANCO = re.compile(r"[0-9]{1,4}")
 
 
-def _por_banco_na_tela(por_banco: dict) -> dict:
-    """So o codigo do banco (ou o 'desconhecido' do motor) vai pra tela; outro rotulo vira 'banco N'.
+def _por_banco_na_tela(por_banco: dict, banco_cli: str | None = None) -> dict:
+    """So o codigo do banco, o 'desconhecido' do motor ou o --banco vao pra tela; outro rotulo vira 'banco N'.
 
-    O rotulo vem do arquivo e pode trazer qualquer texto, ate instrucao ao Claude; o CSV do --saida
-    guarda o original.
+    O rotulo do arquivo pode trazer qualquer texto, ate instrucao ao Claude; o CSV do --saida guarda o
+    original. O --banco vem da linha de comando, nao do arquivo.
     """
     tela: dict = {}
     n = 0
     for rotulo, valor in por_banco.items():
-        if rotulo != BANCO_DESCONHECIDO and not _CODIGO_BANCO.fullmatch(rotulo):
+        if rotulo not in (BANCO_DESCONHECIDO, banco_cli) and not _CODIGO_BANCO.fullmatch(rotulo):
             n += 1
+            if f"banco {n}" == banco_cli:
+                n += 1  # o --banco digitado como "banco N" reserva o numero: dois bancos nunca numa linha
             rotulo = f"banco {n}"
         tela[rotulo] = valor
     return tela
@@ -79,6 +81,8 @@ def main(argv: list[str] | None = None) -> int:
     sys.stderr.reconfigure(errors="replace")
     args = _parse_args(argv)
     caminhos = [Path(e) for e in args.extratos]
+    lista = listar_arquivos(caminhos)  # uma listagem so: a trava do --saida e a leitura veem a mesma pasta
+    arquivos, avisos_da_lista = lista
 
     if args.saida:
         destino = os.path.normcase(os.path.realpath(args.saida))
@@ -90,16 +94,17 @@ def main(argv: list[str] | None = None) -> int:
             # hard link: caminho diferente, mesmo arquivo no disco
             return existe and os.path.exists(a) and os.path.samefile(args.saida, a)
 
-        if any(_mesmo(a) for a in listar_arquivos(caminhos)):
+        if any(_mesmo(a) for a in arquivos):
             print("erro: --saida aponta para um extrato de entrada; escolha outro caminho", file=sys.stderr)
             return 2
 
-    txns, avisos = ler_extratos(caminhos)
+    txns, avisos = ler_extratos(caminhos, lista)  # os avisos da lista saem por aqui, antes dos de cada arquivo
     for aviso in avisos:
         print(f"aviso: {aviso}", file=sys.stderr)
 
-    if args.banco and args.banco != "auto":
-        txns = [t if t.banco else t.__class__(t.data, t.descricao, t.valor, args.banco) for t in txns]
+    banco_cli = args.banco if args.banco and args.banco != "auto" else None
+    if banco_cli:
+        txns = [t if t.banco else t.__class__(t.data, t.descricao, t.valor, banco_cli) for t in txns]
 
     resumo = agregar(txns, ano=args.ano)
 
@@ -108,7 +113,7 @@ def main(argv: list[str] | None = None) -> int:
     if resumo.periodo:
         print(f"Periodo coberto: {resumo.periodo[0]} a {resumo.periodo[1]}")
     print()
-    print(_formata_tabela(_por_banco_na_tela(resumo.por_banco), "Por banco:"))
+    print(_formata_tabela(_por_banco_na_tela(resumo.por_banco, banco_cli), "Por banco:"))
     print()
     print(_formata_tabela(resumo.por_mes, "Por mes:"))
     print()
@@ -120,6 +125,10 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Veredicto: {veredicto}")
 
     if args.saida:
+        if avisos_da_lista:
+            # sem a lista inteira, a trava acima nao sabe se o --saida e um extrato da pasta que nao abriu
+            print("erro: o --saida nao foi gravado (uma pasta de entrada nao pode ser listada)", file=sys.stderr)
+            return 2
         if args.ano is not None:
             txns_saida = [t for t in txns if t.data.year == args.ano]
         else:
