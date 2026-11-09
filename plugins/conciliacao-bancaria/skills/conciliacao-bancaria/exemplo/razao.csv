@@ -1,0 +1,12 @@
+Data;Valor;Documento;Identificador;Contraparte;CNPJ_CPF;Historico
+02/01/2026;4.500,00;1001;;Cliente Beta Ltda;;Recebimento (TED)
+03/01/2026;2.300,00;1002;;Cliente Gama Comercio;;Recebimento (Pix)
+05/01/2026;-1.850,00;5001;;Delta Distribuidora;;Pagto fornecedor
+06/01/2026;-920,00;5002;;Epsilon Servicos;;Pagto fornecedor (Pix)
+08/01/2026;1.200,00;1003;;Cliente Zeta;;Recebimento
+10/01/2026;-3.400,00;5003;;Eta Industria;;Pagto fornecedor
+12/01/2026;2.800,00;1004;;Cliente Teta;;Venda cartao (bruto)
+15/01/2026;-540,00;5004;;Iota Materiais;;Cheque 5004 emitido
+16/01/2026;1.500,00;1005;;Cliente Kappa;;Deposito em transito
+20/01/2026;-1.100,00;5005;;Lambda Transportes;;Pagto fornecedor
+22/01/2026;3.200,00;1006;;Mu Industria;;Recebimento (Pix)

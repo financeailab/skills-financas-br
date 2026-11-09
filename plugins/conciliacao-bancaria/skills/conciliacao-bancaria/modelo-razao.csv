@@ -1,0 +1,7 @@
+Data;Valor;Documento;Identificador;Contraparte;CNPJ_CPF;Historico;Lote
+02/01/2026;1.500,00;1001;;Cliente Alfa Ltda;12.345.678/0001-90;Recebimento (TED);
+03/01/2026;3.217,50;1002;E2E20260103abc;Cliente Beta;98.765.432/0001-11;Recebimento PIX;
+05/01/2026;-850,00;5001;;Fornecedor Gama;11.222.333/0001-44;Pagto fornecedor;
+15/01/2026;-430,00;5004;;Fornecedor Teta;;Cheque 5004 emitido;
+20/01/2026;-1.200,00;5010;;Fornecedor Delta;22.333.444/0001-55;Pagto remessa SISPAG;SISPAG-7788
+20/01/2026;-800,00;5011;;Fornecedor Epsilon;33.444.555/0001-66;Pagto remessa SISPAG;SISPAG-7788

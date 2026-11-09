@@ -1,0 +1,11 @@
+Data;Documento;Valor;Historico
+02/01/2026;1001;1.500,00;Recebimento cliente Alfa Ltda (TED)
+03/01/2026;1002;3.217,50;Recebimento cliente Beta Comercio
+05/01/2026;5001;-850,00;Pagto fornecedor Gama
+06/01/2026;5002;-1.200,00;Pagto fornecedor Delta Servicos
+08/01/2026;1003;500,00;Recebimento cliente Epsilon
+10/01/2026;5003;-2.300,00;Pagto fornecedor Zeta
+12/01/2026;1004;1.800,00;Recebimento cliente Eta Industria
+15/01/2026;5004;-430,00;Cheque 5004 fornecedor Teta (emitido)
+16/01/2026;1005;900,00;Deposito cliente Kappa (em transito)
+20/01/2026;5005;-670,00;Pagto fornecedor Iota
