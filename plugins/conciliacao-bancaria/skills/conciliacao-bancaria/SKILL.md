@@ -4,9 +4,9 @@ description: >-
   Concilia o extrato bancário (OFX, CSV, XLSX, XLS ou PDF) contra o razão contábil ou do
   ERP, classifica cada lançamento, lista as pendências de trânsito e fecha a amarração de
   saldo. Rodando no terminal ou no Claude Code em sessão local, o motor Python
-  processa o extrato localmente e o Claude lê só o resumo agregado (contagens, totais,
-  saldos), nunca a linha de transação. Use quando a pessoa quiser conciliar banco x razão
-  no Brasil.
+  processa o extrato localmente. No Claude Code em sessão local, a skill foi feita para o
+  Claude ler só o resumo agregado (contagens, totais, saldos), não a linha de transação.
+  Use quando a pessoa quiser conciliar banco x razão no Brasil.
 ---
 
 # Conciliação Bancária, Finance AI Lab

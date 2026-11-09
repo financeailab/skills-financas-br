@@ -56,15 +56,16 @@ python scripts/conciliar.py conciliar --extrato EXTRATO.ofx --razao RAZAO.csv \
        --saldo-razao 12345,67 --out resultado
 ```
 
-O Claude lê só o `resumo.json` agregado; o detalhe linha a linha fica no `conciliacao.xlsx`
-(ou `.csv`) local, para você abrir no Excel.
+A skill foi feita para o Claude ler só o `resumo.json` agregado; o detalhe linha a linha fica no
+`conciliacao.xlsx` (ou `.csv`) local, para você abrir no Excel.
 
 ## Privacidade
 
 - **Terminal**: o motor lê o extrato e o razão no seu computador e nada sai dele.
-- **Claude Code, em sessão local**: o motor também lê o extrato e o razão no disco e o Claude lê
-  só o resumo agregado que ele imprime (contagens, totais, saldos, amarração); o seu pedido, esse
-  resumo e qualquer arquivo que você mandar o Claude abrir vão para a Anthropic.
+- **Claude Code, em sessão local**: o motor também lê o extrato e o razão no disco e a skill foi
+  feita para o Claude ler só o resumo agregado que ele imprime (contagens, totais, saldos,
+  amarração), mas o seu pedido, esse resumo e qualquer arquivo que o Claude abrir vão para a
+  Anthropic.
 - **Cowork** (desde 06/10/2026, planos Pro, Max e Ultra) e **claude.ai** (web ou app): o trabalho
   roda na nuvem da Anthropic e o arquivo sobe para lá. Nesse caso, anonimize o arquivo ou rode no
   terminal ou no Claude Code em sessão local.
