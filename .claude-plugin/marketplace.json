@@ -15,6 +15,11 @@
       "name": "conciliacao-bancaria",
       "source": "./plugins/conciliacao-bancaria",
       "description": "Concilia o extrato bancário (OFX, CSV, XLSX, XLS ou PDF) contra o razão do ERP, classifica os lançamentos, lista as pendências e fecha a amarração de saldo."
+    },
+    {
+      "name": "leitor-de-notas-fiscais",
+      "source": "./plugins/leitor-de-notas-fiscais",
+      "description": "Lê NF-e e NFS-e de fornecedor (XML, PDF ou foto), confere com regras fiscais e gera a carga de contas a pagar (Omie, ContaAzul ou CSV genérico)."
     }
   ]
 }

@@ -1,0 +1,12 @@
+{
+  "name": "leitor-de-notas-fiscais",
+  "displayName": "Leitor de Notas Fiscais",
+  "version": "0.1.0",
+  "description": "Lê notas fiscais de fornecedor (NFS-e e NF-e, em XML, PDF ou foto), confere com regras fiscais e gera a carga de contas a pagar para Omie, ContaAzul ou CSV genérico. Motor Python; no XML, no terminal ou no Claude Code em sessão local, o motor lê a nota no disco, e a skill foi feita para o Claude ler só o resumo que ele imprime, mas o pedido, esse resumo e qualquer arquivo que o Claude abrir vão para a Anthropic.",
+  "author": {
+    "name": "Douglas Ferreira",
+    "url": "https://www.linkedin.com/in/douglasaf98"
+  },
+  "homepage": "https://financeailab.com.br/ferramentas/leitor-de-notas-fiscais/",
+  "license": "Apache-2.0"
+}
