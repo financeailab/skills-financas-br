@@ -41,6 +41,25 @@ jobs:
           done
           exit $fail
 
+  leitor-de-notas-fiscais:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r plugins/leitor-de-notas-fiscais/skills/leitor-de-notas-fiscais/requirements.txt pytest
+      # piso: se a coleta perder testes (layout, import), o job falha (suite exportada: 405)
+      - name: Rodar suíte e conferir o número de testes
+        working-directory: plugins/leitor-de-notas-fiscais
+        run: |
+          set -euo pipefail
+          python -m pytest -q tests | tee saida.txt
+          passou=$(grep -oE '[0-9]+ passed' saida.txt | grep -oE '[0-9]+')
+          test "${passou:-0}" -ge 405
+
   ferramentas:
     runs-on: ubuntu-latest
     steps:
@@ -68,6 +87,7 @@ jobs:
       - run: npx -y @anthropic-ai/claude-code@2.1.285 plugin validate --strict .
       - run: npx -y @anthropic-ai/claude-code@2.1.285 plugin validate --strict plugins/auditor-de-tarifas
       - run: npx -y @anthropic-ai/claude-code@2.1.285 plugin validate --strict plugins/conciliacao-bancaria
+      - run: npx -y @anthropic-ai/claude-code@2.1.285 plugin validate --strict plugins/leitor-de-notas-fiscais
 
   gitleaks:
     runs-on: ubuntu-latest
