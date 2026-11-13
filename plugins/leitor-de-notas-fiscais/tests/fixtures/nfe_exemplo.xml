@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe">
+  <NFe>
+    <infNFe Id="NFe01234567890123456789012345678901234567890123">
+      <ide><nNF>456</nNF><serie>1</serie><dhEmi>2026-03-10T08:00:00-03:00</dhEmi></ide>
+      <emit><CNPJ>11222333000181</CNPJ><xNome>FORNECEDOR EXEMPLO LTDA</xNome></emit>
+      <total>
+        <ICMSTot>
+          <vProd>200.00</vProd>
+          <vFrete>0.00</vFrete>
+          <vSeg>0.00</vSeg>
+          <vOutro>0.00</vOutro>
+          <vDesc>0.00</vDesc>
+          <vNF>200.00</vNF>
+        </ICMSTot>
+      </total>
+    </infNFe>
+  </NFe>
+</nfeProc>

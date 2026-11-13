@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">
+  <Nfse>
+    <InfNfse>
+      <Numero>123</Numero>
+      <CodigoVerificacao>ABC12345</CodigoVerificacao>
+      <DataEmissao>2026-03-15T09:55:00</DataEmissao>
+      <Servico>
+        <Valores>
+          <ValorServicos>1000.00</ValorServicos>
+          <ValorIss>50.00</ValorIss>
+          <Aliquota>5.00</Aliquota>
+          <BaseCalculo>1000.00</BaseCalculo>
+          <IssRetido>1</IssRetido>
+          <ValorLiquidoNfse>950.00</ValorLiquidoNfse>
+        </Valores>
+        <ItemListaServico>0702</ItemListaServico>
+        <Discriminacao>Servico de exemplo ABRASF</Discriminacao>
+      </Servico>
+      <PrestadorServico>
+        <IdentificacaoPrestador>
+          <Cnpj>11222333000181</Cnpj>
+        </IdentificacaoPrestador>
+        <RazaoSocial>PRESTADOR EXEMPLO LTDA</RazaoSocial>
+      </PrestadorServico>
+    </InfNfse>
+  </Nfse>
+</CompNfse>

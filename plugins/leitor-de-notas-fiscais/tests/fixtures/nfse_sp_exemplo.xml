@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NFe xmlns="http://www.prefeitura.sp.gov.br/nfe">
+  <ChaveNFe>
+    <InscricaoPrestador>12345678</InscricaoPrestador>
+    <NumeroNFe>123</NumeroNFe>
+    <CodigoVerificacao>ABCD1234</CodigoVerificacao>
+  </ChaveNFe>
+  <DataEmissaoNFe>2026-03-15T09:55:00</DataEmissaoNFe>
+  <CPFCNPJPrestador>
+    <CNPJ>11222333000181</CNPJ>
+  </CPFCNPJPrestador>
+  <RazaoSocialPrestador>PRESTADOR EXEMPLO LTDA</RazaoSocialPrestador>
+  <CodigoServico>07498</CodigoServico>
+  <Discriminacao>Servico de exemplo SP</Discriminacao>
+  <ValorServicos>1000.00</ValorServicos>
+  <ValorISS>50.00</ValorISS>
+  <AliquotaServicos>0.05</AliquotaServicos>
+  <ISSRetido>false</ISSRetido>
+</NFe>

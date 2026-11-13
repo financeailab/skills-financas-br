@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe">
+  <NFe>
+    <infNFe Id="NFe11222333000181550010000044440000044440">
+      <ide><nNF>4004</nNF><serie>1</serie><dhEmi>2026-03-08T08:30:00-03:00</dhEmi></ide>
+      <emit><CNPJ>11222333000181</CNPJ><xNome>Distribuidora Norte Exemplo LTDA</xNome></emit>
+      <total>
+        <ICMSTot>
+          <vProd>3200.00</vProd>
+          <vFrete>150.00</vFrete>
+          <vSeg>0.00</vSeg>
+          <vOutro>0.00</vOutro>
+          <vDesc>50.00</vDesc>
+          <vNF>3300.00</vNF>
+        </ICMSTot>
+      </total>
+    </infNFe>
+  </NFe>
+</nfeProc>

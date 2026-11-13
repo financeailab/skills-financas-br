@@ -1,0 +1,18 @@
+[
+  {
+    "arquivo": "nfse-escaneada.pdf",
+    "_comentario": "NFS-e lida de um PDF escaneado pelo Claude (caminho PDF). ISS retido pelo tomador.",
+    "extracao": {
+      "classe": "nfse",
+      "campos": {
+        "emitente_cnpj": {"valor": "11222333000181", "rotulo_exato": true},
+        "emitente_nome": {"valor": "Consultoria Aurora Exemplo LTDA", "rotulo_exato": true},
+        "valor_servicos": {"valor": "5000.00", "rotulo_exato": true},
+        "iss_base": {"valor": "5000.00", "rotulo_exato": true},
+        "iss_aliquota": {"valor": "5.00", "rotulo_exato": true},
+        "iss_valor": {"valor": "250.00", "rotulo_exato": false},
+        "iss_tipo_retencao": {"valor": "retido_tomador", "rotulo_exato": true}
+      }
+    }
+  }
+]
