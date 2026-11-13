@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NFSe xmlns="http://www.sped.fazenda.gov.br/nfse">
+  <infNFSe Id="NFS01234567890123456789012345678901234567890123456789">
+    <nNFSe>000000000000123</nNFSe>
+    <dhProc>2026-03-15T10:00:00-03:00</dhProc>
+    <emit>
+      <CNPJ>11222333000181</CNPJ>
+      <xNome>PRESTADOR EXEMPLO LTDA</xNome>
+    </emit>
+    <valores>
+      <vLiq>950.00</vLiq>
+    </valores>
+    <DPS>
+      <infDPS>
+        <dhEmi>2026-03-15T09:55:00-03:00</dhEmi>
+        <serv>
+          <cServ>
+            <cTribNac>070201</cTribNac>
+            <xDescServ>Servico de exemplo</xDescServ>
+          </cServ>
+        </serv>
+        <valores>
+          <vServPrest><vServ>1000.00</vServ></vServPrest>
+          <trib>
+            <tribISSQN>
+              <vBC>1000.00</vBC>
+              <pAliqAplic>5.00</pAliqAplic>
+              <vISSQN>50.00</vISSQN>
+              <tpRetISSQN>2</tpRetISSQN>
+            </tribISSQN>
+            <tribFed>
+              <vRetIRRF>0.00</vRetIRRF>
+              <vRetCSLL>0.00</vRetCSLL>
+            </tribFed>
+          </trib>
+        </valores>
+      </infDPS>
+    </DPS>
+  </infNFSe>
+</NFSe>

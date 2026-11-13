@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">
+  <Nfse>
+    <InfNfse>
+      <Numero>2002</Numero>
+      <CodigoVerificacao>EXEMPLO22</CodigoVerificacao>
+      <DataEmissao>2026-03-12T14:30:00</DataEmissao>
+      <Servico>
+        <Valores>
+          <ValorServicos>1500.00</ValorServicos>
+          <ValorIss>75.00</ValorIss>
+          <Aliquota>5.00</Aliquota>
+          <BaseCalculo>1500.00</BaseCalculo>
+          <IssRetido>2</IssRetido>
+          <ValorLiquidoNfse>1500.00</ValorLiquidoNfse>
+        </Valores>
+        <ItemListaServico>0103</ItemListaServico>
+        <Discriminacao>Manutencao de software (exemplo ficticio)</Discriminacao>
+      </Servico>
+      <PrestadorServico>
+        <IdentificacaoPrestador>
+          <Cnpj>11222333000181</Cnpj>
+        </IdentificacaoPrestador>
+        <RazaoSocial>Oficina Digital Exemplo ME</RazaoSocial>
+      </PrestadorServico>
+    </InfNfse>
+  </Nfse>
+</CompNfse>
