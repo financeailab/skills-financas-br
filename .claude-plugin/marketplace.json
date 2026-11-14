@@ -20,6 +20,11 @@
       "name": "leitor-de-notas-fiscais",
       "source": "./plugins/leitor-de-notas-fiscais",
       "description": "Lê NF-e e NFS-e de fornecedor (XML, PDF ou foto), confere com regras fiscais e gera a carga de contas a pagar (Omie, ContaAzul ou CSV genérico)."
+    },
+    {
+      "name": "fluxo-de-caixa-direto",
+      "source": "./plugins/fluxo-de-caixa-direto",
+      "description": "Cruza os extratos OFX com o contas a pagar e a receber do ERP (Omie ou CSV genérico) e devolve o fluxo de caixa direto: realizado por categoria e projeção de 13 semanas, com alertas."
     }
   ]
 }

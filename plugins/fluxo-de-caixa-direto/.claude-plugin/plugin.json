@@ -1,0 +1,12 @@
+{
+  "name": "fluxo-de-caixa-direto",
+  "displayName": "Fluxo de Caixa Direto",
+  "version": "0.1.0",
+  "description": "Cruza os extratos OFX das contas com o contas a pagar e a receber do ERP (Omie ou CSV genérico) e devolve o fluxo de caixa direto: realizado por categoria e projeção rolante de 13 semanas, com alerta de semana negativa e de título vencido em aberto. Motor Python; no terminal ou no Claude Code em sessão local, o motor lê os arquivos no disco, e a skill foi feita para o Claude ler só o resumo que ele imprime, mas o pedido, esse resumo e qualquer arquivo que o Claude abrir vão para a Anthropic.",
+  "author": {
+    "name": "Douglas Ferreira",
+    "url": "https://www.linkedin.com/in/douglasaf98"
+  },
+  "homepage": "https://financeailab.com.br/ferramentas/fluxo-de-caixa-direto/",
+  "license": "Apache-2.0"
+}
