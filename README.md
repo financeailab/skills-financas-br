@@ -14,6 +14,7 @@ Finanças Corporativas.
 | Auditor de Tarifas | Soma as tarifas bancárias de um extrato (OFX/CSV) por banco, mês e tipo, com o IOF separado do que é tarifa de fato | [`plugins/auditor-de-tarifas`](plugins/auditor-de-tarifas/README.md) |
 | Conciliação Bancária | Concilia o extrato bancário (OFX, CSV, XLSX, XLS ou PDF) contra o razão do ERP, classifica cada lançamento, lista as pendências e fecha a amarração de saldo | [`plugins/conciliacao-bancaria`](plugins/conciliacao-bancaria/README.md) |
 | Leitor de Notas Fiscais | Lê NF-e e NFS-e de fornecedor (XML, PDF ou foto), confere com regras fiscais e gera a carga de contas a pagar (Omie, ContaAzul ou CSV genérico) | [`plugins/leitor-de-notas-fiscais`](plugins/leitor-de-notas-fiscais/README.md) |
+| Fluxo de Caixa Direto | Cruza os extratos OFX com o contas a pagar e a receber do ERP (Omie ou CSV genérico) e devolve o fluxo de caixa direto: realizado por categoria e projeção de 13 semanas, com alertas | [`plugins/fluxo-de-caixa-direto`](plugins/fluxo-de-caixa-direto/README.md) |
 
 ## Como instalar
 
