@@ -74,9 +74,9 @@ class Lancamento:
 ACAO_PENDENCIA = {
     "TARIFA_IOF": "lançar no razão (despesa bancária)",
     "RENDIMENTO": "lançar no razão (receita financeira)",
-    "PIX_ORFAO": "conferir — identificar o pagador",
+    "PIX_ORFAO": "conferir e identificar o pagador",
     "LIQUIDO_ADQUIRENTE": "conciliar pelo líquido + linha de taxa",
-    "LOTE_SISPAG": "lote de pagamento — conferir contra a remessa (informe a coluna Lote no razão p/ conciliar)",
+    "LOTE_SISPAG": "lote de pagamento: conferir contra a remessa (informe a coluna Lote no razão p/ conciliar)",
     "A_LANCAR": "lançar no razão",
     "CHEQUE_NAO_COMPENSADO": "aguardar compensação no banco",
     "DEPOSITO_TRANSITO": "aguardar crédito no banco",

@@ -171,7 +171,7 @@ def fase1_validar(extrato_path: str, razao_path: str, overrides: dict) -> tuple[
     if ext.n_contas > 1:
         diag["reprovas"].append(
             f"o extrato tem {ext.n_contas} contas (conta corrente + cartao/poupanca?). "
-            f"Exporte e concilie UMA conta por vez — misturar contas falsearia a amarracao.")
+            f"Exporte e concilie UMA conta por vez: misturar contas falsearia a amarracao.")
     if not ext.transacoes:
         diag["reprovas"].append(_msg_sem_transacoes(ext))
     if ext.txns_corrompidas:
@@ -225,7 +225,7 @@ def fase1_validar(extrato_path: str, razao_path: str, overrides: dict) -> tuple[
                 e0, e1 = min(datas_e), max(datas_e)
                 r0, r1 = min(datas_r), max(datas_r)
                 if e1 < r0 or r1 < e0:
-                    diag["avisos"].append("periodos de extrato e razao nao se sobrepoem — confira os arquivos")
+                    diag["avisos"].append("periodos de extrato e razao nao se sobrepoem: confira os arquivos")
         else:
             diag["reprovas"].append("razao sem linhas validas apos a normalizacao")
 
@@ -237,7 +237,7 @@ def fase1_validar(extrato_path: str, razao_path: str, overrides: dict) -> tuple[
 def conciliar(extrato_path, razao_path, saldo_razao, out_dir, overrides, janela, tolerancia,
               saldo_extrato_override=None):
     aprovado, metad = fase1_validar(extrato_path, razao_path, overrides)
-    print("== FASE 1 — VALIDACAO ==")
+    print("== FASE 1: VALIDACAO ==")
     print(json.dumps(metad, ensure_ascii=False, indent=2, default=str))
     if not aprovado:
         print("\n[REPROVADO] corrija os itens acima antes de cruzar. Nada foi conciliado.")
@@ -249,7 +249,7 @@ def conciliar(extrato_path, razao_path, saldo_razao, out_dir, overrides, janela,
 
     saldo_ext, aviso_saldo = _saldo_extrato_efetivo(ext.saldo_final, saldo_extrato_override)
 
-    print("\n== FASE 2 — CRUZAMENTO ==")
+    print("\n== FASE 2: CRUZAMENTO ==")
     c = match_banco(
         ext.transacoes, razao,
         tolerancia=tolerancia, janela_dias=janela,
@@ -280,12 +280,12 @@ def conciliar(extrato_path, razao_path, saldo_razao, out_dir, overrides, janela,
     # controle agregado do lote (SISPAG sem nº de remessa): bate no agregado?
     cl = resumo_tmp.get("controle_lote")
     if cl:
-        print("\n  controle de lote (SISPAG — sem nº de remessa no razao p/ parear):")
+        print("\n  controle de lote (SISPAG, sem nº de remessa no razao p/ parear):")
         print(f"    debitos de lote no banco : {cl['qtd_debitos_lote']:>4}  total {cl['total_debitos_lote']}")
         print(f"    titulos de saida pendentes: {cl['qtd_titulos_pendentes']:>4}  total {cl['total_titulos_pendentes']}")
         print(f"    diferenca (banco - razao) : {cl['diferenca']}  (≈0 = lotes batem no agregado; confira a remessa p/ o detalhe)")
 
-    print("\n== FASE 3 — RELATORIO ==")
+    print("\n== FASE 3: RELATORIO ==")
     os.makedirs(out_dir, exist_ok=True)
     resumo = resumo_privado(c)
     resumo_path = os.path.join(out_dir, "resumo.json")
@@ -386,9 +386,9 @@ def _escreve_relatorio(c, out_dir):
     # --- cabecalho ---
     cap["B2"] = "Conciliação Bancária"
     cap["B2"].font = F(bold=True, size=20, color=_COR["ink"])
-    cap["C3"] = "Relatório gerado localmente · Finance AI Lab"
+    cap["C3"] = "Relatório gerado pelo motor · Finance AI Lab"
     cap.merge_cells("B3:D3")
-    cap["B3"] = "Relatório gerado localmente · Finance AI Lab"
+    cap["B3"] = "Relatório gerado pelo motor · Finance AI Lab"
     cap["B3"].font = F(size=10, italic=True, color=_COR["mut"])
     # regua esmeralda
     for col in ("B", "C", "D"):
@@ -423,7 +423,7 @@ def _escreve_relatorio(c, out_dir):
         fecha = c.integridade_ok
         cor = _COR["emerald"] if fecha else _COR["amber"]
         bg = _COR["wash"] if fecha else _COR["amberbg"]
-        txt = "AMARRAÇÃO FECHA — integridade OK" if fecha else f'AMARRAÇÃO NÃO FECHA — resíduo {c.amarracao["residuo"]}'
+        txt = "AMARRAÇÃO FECHA: integridade OK" if fecha else f'AMARRAÇÃO NÃO FECHA: resíduo {c.amarracao["residuo"]}'
         cap.merge_cells(f"B{ln}:D{ln}")
         cell = cap.cell(ln, 2, txt)
         cell.font = F(bold=True, size=11, color=cor)
@@ -434,7 +434,7 @@ def _escreve_relatorio(c, out_dir):
         diag = c.amarracao.get("diagnostico")
         if diag and not fecha:
             cap.merge_cells(f"B{ln}:D{ln}")
-            d = cap.cell(ln, 2, f'Causa provável: {diag.get("causa_provavel")} — {diag.get("acao","")}')
+            d = cap.cell(ln, 2, f'Causa provável: {diag.get("causa_provavel")}; {diag.get("acao","")}')
             d.font = F(size=9, italic=True, color=_COR["ink"]); d.alignment = Alignment(wrap_text=True, vertical="top")
             cap.row_dimensions[ln].height = 30
             ln += 1
@@ -456,7 +456,7 @@ def _escreve_relatorio(c, out_dir):
     # --- pendencias por categoria (com acao) ---
     pend = res.get("pendencias_por_categoria") or {}
     if pend:
-        _kicker("PENDÊNCIAS POR CATEGORIA — O QUE FAZER")
+        _kicker("PENDÊNCIAS POR CATEGORIA: O QUE FAZER")
         h = ["Categoria", "Qtd", "Ação sugerida"]
         for j, t in enumerate(h):
             cc = cap.cell(ln, 2 + j, t)
@@ -477,7 +477,7 @@ def _escreve_relatorio(c, out_dir):
     # --- controle de lote (se houver) ---
     cl = res.get("controle_lote")
     if cl:
-        _kicker("CONTROLE DE LOTE (SISPAG) — agregado")
+        _kicker("CONTROLE DE LOTE (SISPAG): agregado")
         _kv("Débitos de lote (banco)", f'{cl["qtd_debitos_lote"]} · {_brl(Decimal(cl["total_debitos_lote"]))}')
         _kv("Títulos pendentes (razão)", f'{cl["qtd_titulos_pendentes"]} · {_brl(Decimal(cl["total_titulos_pendentes"]))}')
         _kv("Diferença (≈0 = bate)", _brl(Decimal(cl["diferenca"])))
@@ -485,7 +485,7 @@ def _escreve_relatorio(c, out_dir):
 
     # --- rodape (fosso) ---
     cap.merge_cells(f"B{ln}:D{ln}")
-    foot = cap.cell(ln, 2, "Detalhe linha a linha nas abas por status. Tudo gerado na sua máquina — nenhum dado subiu para a internet.")
+    foot = cap.cell(ln, 2, "Detalhe linha a linha nas abas por status.")
     foot.font = F(size=8, italic=True, color=_COR["mut"]); foot.alignment = Alignment(wrap_text=True)
     cap.row_dimensions[ln].height = 24
 
@@ -782,7 +782,7 @@ def cmd_pasta(pasta, out_dir, ocr=False):
             glob["ingeridas"] += 1
         contas.append(conta)
 
-    print("== CONCILIACAO DA PASTA (por conta — 1 razao por conta) ==")
+    print("== CONCILIACAO DA PASTA (por conta: 1 razao por conta) ==")
     print(f"  contas: {glob['contas']} | conciliadas: {glob['conciliadas']} | "
           f"so ingeridas (sem razao): {glob['ingeridas']} | extrato p/ acao: {glob['precisa_acao']}")
     print(f"\n  {'conta':<34}{'fonte':<6}{'txns':>5}{'raz':>5}{'taxa':>6}{'pEXT':>6}{'pRAZ':>6}{'AR?':>5}")
@@ -797,7 +797,7 @@ def cmd_pasta(pasta, out_dir, ocr=False):
             print(f"  {c['conta'][:32]:<34}{c['fonte']:<6}{c['n_txns']:>5}{'':>5}{'':>6}{'':>6}{'':>6}  {nota}")
 
     if glob["ar_cred"]:
-        print(f"\n  [i] {glob['ar_cred']} credito(s) do banco sem correspondente no razao — o foco do produto"
+        print(f"\n  [i] {glob['ar_cred']} credito(s) do banco sem correspondente no razao: o foco do produto"
               f" e CONTAS A PAGAR; para esses, LANCE um CONTAS A RECEBER no razao da conta.")
     multi = [c["conta"] for c in contas if c.get("multiconta")]
     pa = glob["precisa_acao"] - len(multi)                 # multiconta tem a linha propria logo abaixo
@@ -810,7 +810,7 @@ def cmd_pasta(pasta, out_dir, ocr=False):
     amb = sum(c.get("ambiguos", 0) for c in contas)       # SPEC-07 #4
     if amb:
         print(f"  [!] {amb} conciliacao(oes) AMBIGUA(s) (mesmo valor sem documento/identificador p/ desempatar)"
-              f" — casei o par provavel, mas CONFIRA no Excel da(s) conta(s).")
+              f": casei o par provavel, mas CONFIRA no Excel da(s) conta(s).")
     conf = sum(c.get("conferir_cpf_cnpj", 0) for c in contas)                    # D9
     if conf:
         print(f"  [!] {conf} conciliacao(oes) com CPF/CNPJ do banco diferente do razao (confira no Excel)")
@@ -822,11 +822,11 @@ def cmd_pasta(pasta, out_dir, ocr=False):
     if fecha:
         print(f"  [i] amarracao FECHOU em: {', '.join(fecha)}.")
     if naofecha:
-        print(f"  [!] amarracao NAO fechou em: {', '.join(naofecha)} — confira o saldo-razao.txt e as pendencias.")
+        print(f"  [!] amarracao NAO fechou em: {', '.join(naofecha)}. Confira o saldo-razao.txt e as pendencias.")
     for nome, n, lista in reprovadas:
         print(f"  [!] razão reprovada em: {nome} ({n} linha(s) inválida(s): linhas {lista})")
     if soltos_raiz:
-        print(f"  [i] Ignorei {soltos_raiz} arquivo(s) solto(s) na raiz da pasta — nao sao contas"
+        print(f"  [i] Ignorei {soltos_raiz} arquivo(s) solto(s) na raiz da pasta: nao sao contas"
               f" (organize 1 subpasta por conta: extrato + razao.csv).")
     if glob["contas"] == 0:
         print("\n  Nenhuma conta encontrada. Organize 1 SUBPASTA por conta (extrato + razao.csv) na pasta"

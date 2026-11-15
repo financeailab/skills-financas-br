@@ -570,7 +570,7 @@ def _ingest_pdf(path, budget_s: float = 30.0, ocr: bool = False) -> dict:
             txns = _pdf_text_to_txns(texto)
             if txns:
                 return {"transacoes": txns, "status": "ATENCAO", "n_ignoradas": 0,
-                        "aviso": "PDF lido por heuristica de texto — confira os lancamentos"}
+                        "aviso": "PDF lido por heuristica de texto: confira os lancamentos"}
             if len(texto.strip()) < 60:
                 if ocr and ocr_disponivel():        # SPEC-02: PDF escaneado -> OCR local
                     texto_ocr = _ocr_pdf(path)
@@ -581,9 +581,9 @@ def _ingest_pdf(path, budget_s: float = 30.0, ocr: bool = False) -> dict:
                     txns_ocr = _pdf_text_to_txns(texto_ocr)
                     if txns_ocr:
                         return {"transacoes": txns_ocr, "status": "ATENCAO", "n_ignoradas": 0,
-                                "aviso": "PDF escaneado lido por OCR local — confira os lancamentos"}
+                                "aviso": "PDF escaneado lido por OCR local: confira os lancamentos"}
                 return {"transacoes": [], "status": "PRECISA_OCR", "n_ignoradas": 0,
-                        "aviso": "PDF sem texto extraivel (escaneado?) — precisa OCR"
+                        "aviso": "PDF sem texto extraivel (escaneado?): precisa OCR"
                                  + ("" if ocr_disponivel() else " (Tesseract nao instalado)")}
             rows_all = []
             for pg in paginas:
@@ -607,10 +607,10 @@ def _ingest_pdf(path, budget_s: float = 30.0, ocr: bool = False) -> dict:
         txns = _pdf_text_to_txns(texto)
         if txns:
             return {"transacoes": txns, "status": "ATENCAO", "n_ignoradas": 0,
-                    "aviso": "PDF lido por pypdf (fallback) — confira os lancamentos"}
+                    "aviso": "PDF lido por pypdf (fallback): confira os lancamentos"}
         if len(texto.strip()) < 60:
             return {"transacoes": [], "status": "PRECISA_OCR", "n_ignoradas": 0,
-                    "aviso": "PDF sem texto extraivel (escaneado?) — precisa OCR"}
+                    "aviso": "PDF sem texto extraivel (escaneado?): precisa OCR"}
         return {"transacoes": [], "status": "MAPEAR_COLUNAS", "n_ignoradas": 0,
                 "aviso": "PDF (pypdf) com texto mas nao reconheci linhas de lancamento"}
 
@@ -642,11 +642,11 @@ def ingest_extrato(path, ocr: bool = False) -> ExtratoResult:
                 txns = _pdf_text_to_txns(_ocr_imagem(path))
                 if txns:
                     return ExtratoResult(transacoes=txns, status="ATENCAO", fonte="imagem",
-                                         aviso="imagem lida por OCR local — confira os lancamentos")
+                                         aviso="imagem lida por OCR local: confira os lancamentos")
                 return ExtratoResult(status="MAPEAR_COLUNAS", fonte="imagem",
                                      aviso="OCR rodou mas nao reconheci lancamentos na imagem")
             return ExtratoResult(status="PRECISA_OCR", fonte="imagem",
-                                 aviso="imagem de extrato — precisa OCR local (Tesseract)"
+                                 aviso="imagem de extrato: precisa OCR local (Tesseract)"
                                        + ("" if ocr_disponivel() else "; Tesseract nao instalado"))
         if ext in _TABULAR:
             fonte = "html" if (ext == "xls" and _looks_html(path)) else ext

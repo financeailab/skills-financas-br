@@ -140,9 +140,9 @@ Para a amarração de saldo de uma conta específica, use a `conciliar` (abaixo)
 python scripts/conciliar.py validar --extrato EXTRATO.ofx --razao RAZAO.csv
 ```
 Mostra metadados agregados (banco/conta, nº de transações, período, colunas
-detectadas da razão). **Se reprovar** (coluna obrigatória ausente, arquivo
+detectadas do razão). **Se reprovar** (coluna obrigatória ausente, arquivo
 ilegível, períodos que não se sobrepõem), **pare** e ajude a corrigir, não
-cruze nada. Se a razão usar nomes de coluna fora do padrão, passe
+cruze nada. Se o razão usar nomes de coluna fora do padrão, passe
 `--col-data`, `--col-valor`, `--col-doc`, `--col-desc`.
 
 ### Fase 2 + 3: Conciliar e relatar
@@ -218,6 +218,6 @@ Responda em PT-BR, direto: taxa de conciliação, o que ficou pendente de cada l
 
 - Conciliação **bancária** (extrato baixado). **CNAB** (remessa/retorno) fica fora:
   já é auto-conciliado pelo ERP, e não é onde a dor está.
-- A razão precisa de valor **com sinal** na convenção +entrada/−saída. Outras
+- O razão precisa de valor **com sinal** na convenção +entrada/−saída. Outras
   convenções (débito/crédito em colunas separadas) ainda não são suportadas.
 - PDF de extrato é frágil. Prefira OFX.
