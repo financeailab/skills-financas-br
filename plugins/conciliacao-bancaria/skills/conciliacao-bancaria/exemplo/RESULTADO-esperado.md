@@ -27,12 +27,12 @@ python scripts/conciliar.py conciliar --extrato exemplo/extrato.ofx --razao exem
 
 | Categoria | Qtd | Ação |
 |---|---|---|
-| TARIFA_IOF | 2 | lançar no razão (despesa bancária) — a tarifa de pacote e o IOF |
-| RENDIMENTO | 1 | lançar no razão (receita financeira) — o rendimento da aplicação |
-| LIQUIDO_ADQUIRENTE | 1 | conciliar pelo líquido + linha de taxa — a venda no cartão caiu líquida (R$ 2.744 vs R$ 2.800 da venda) |
-| CHEQUE_NAO_COMPENSADO | 1 | aguardar compensação — o cheque 5004 ainda não foi descontado |
-| DEPOSITO_TRANSITO | 1 | aguardar crédito — o depósito do cliente Kappa ainda não caiu |
-| EM_TRANSITO | 1 | aguardar / conferir — a venda bruta do cartão, esperando o líquido |
+| TARIFA_IOF | 2 | lançar no razão (despesa bancária): a tarifa de pacote e o IOF |
+| RENDIMENTO | 1 | lançar no razão (receita financeira): o rendimento da aplicação |
+| LIQUIDO_ADQUIRENTE | 1 | conciliar pelo líquido + linha de taxa: a venda no cartão caiu líquida (R$ 2.744 vs R$ 2.800 da venda) |
+| CHEQUE_NAO_COMPENSADO | 1 | aguardar compensação: o cheque 5004 ainda não foi descontado |
+| DEPOSITO_TRANSITO | 1 | aguardar crédito: o depósito do cliente Kappa ainda não caiu |
+| EM_TRANSITO | 1 | aguardar / conferir: a venda bruta do cartão, esperando o líquido |
 
 **Amarração (o checksum que prova que fechou):**
 
@@ -47,7 +47,7 @@ residuo                        0.00   <-- FECHA (integridade OK)
 ```
 
 Se o `residuo` for **0,00**, a conciliação fechou e você pode confiar nos números.
-Se não fechar, há erro de integridade a investigar — a skill avisa, não maquia.
+Se não fechar, há erro de integridade a investigar: a skill avisa, não maquia.
 
 ## O que conferir no relatório local
 
