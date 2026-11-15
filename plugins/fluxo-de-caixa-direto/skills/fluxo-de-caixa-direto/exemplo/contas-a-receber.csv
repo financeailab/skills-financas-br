@@ -1,0 +1,3 @@
+cliente;documento;vencimento;valor;status
+Cliente Grande;NF-R700;20/08/2026;6000,00;a receber
+Cliente Atrasado;NF-R701;12/07/2026;1800,00;aberto

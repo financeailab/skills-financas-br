@@ -1,0 +1,13 @@
+[project]
+name = "fluxo-caixa-direto"
+version = "0.1.0"
+description = "Fluxo de Caixa Direto (ERP x extrato): realizado por categoria + projecao rolante de 13 semanas. Motor local (dado-local)."
+requires-python = ">=3.10"
+# Runtime: openpyxl (XLSX colorido). Resto e stdlib puro (parse OFX via regex, CSV via csv).
+dependencies = ["openpyxl>=3.1"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

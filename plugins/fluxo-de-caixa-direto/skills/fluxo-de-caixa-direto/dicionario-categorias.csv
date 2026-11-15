@@ -1,0 +1,64 @@
+categoria,keyword
+Recebimentos,PIX RECEBIDO
+Recebimentos,TED RECEBIDA
+Recebimentos,DOC RECEBIDO
+Recebimentos,DEPOSITO
+Recebimentos,RECEBIMENTO
+Recebimentos,CREDITO LIQUIDACAO
+Recebimentos,CREDITO VENDA
+Fornecedores,PIX ENVIADO
+Fornecedores,TED ENVIADA
+Fornecedores,PAGTO FORNECEDOR
+Fornecedores,PAGAMENTO A FORNECEDOR
+Fornecedores,BOLETO PAGO
+Fornecedores,PAGAMENTO NF
+Fornecedores,COMPRA MATERIAL
+Impostos/Tributos,DARF
+Impostos/Tributos,GPS
+Impostos/Tributos,DAS
+Impostos/Tributos,GNRE
+Impostos/Tributos,FGTS
+Impostos/Tributos,ISS
+Impostos/Tributos,ICMS
+Impostos/Tributos,SIMPLES NACIONAL
+Impostos/Tributos,TRIBUTO
+Folha & Benefícios,FOLHA PAGAMENTO
+Folha & Benefícios,SALARIO
+Folha & Benefícios,PRO LABORE
+Folha & Benefícios,VALE REFEICAO
+Folha & Benefícios,VALE ALIMENTACAO
+Folha & Benefícios,VALE TRANSPORTE
+Folha & Benefícios,FERIAS
+Folha & Benefícios,RESCISAO
+Folha & Benefícios,INSS FOLHA
+Aluguel/Ocupação,ALUGUEL
+Aluguel/Ocupação,CONDOMINIO
+Aluguel/Ocupação,IPTU
+Aluguel/Ocupação,ENERGIA ELETRICA
+Aluguel/Ocupação,CONTA DE LUZ
+Aluguel/Ocupação,CONTA DE AGUA
+Aluguel/Ocupação,INTERNET
+Aluguel/Ocupação,TELEFONIA
+Tarifas Bancárias,TARIFA MANUTENCAO
+Tarifas Bancárias,CESTA DE SERVICOS
+Tarifas Bancárias,PACOTE DE SERVICOS
+Tarifas Bancárias,MANUTENCAO DE CONTA
+Tarifas Bancárias,IOF
+Tarifas Bancárias,TARIFA TED
+Tarifas Bancárias,TARIFA DOC
+Aplicações/Resgates,APLICACAO AUTOMATICA
+Aplicações/Resgates,RESGATE AUTOMATICO
+Aplicações/Resgates,APLICACAO CDB
+Aplicações/Resgates,RESGATE FUNDO
+Aplicações/Resgates,POUPANCA
+Aplicações/Resgates,FUNDO DE INVESTIMENTO
+Transferências Internas,TRANSF MESMA TITULARIDADE
+Transferências Internas,TRANSFERENCIA ENTRE CONTAS
+Transferências Internas,TED MESMA TITULARIDADE
+Transferências Internas,TRANSF ENTRE CONTAS PROPRIAS
+Transferências Internas,DOC MESMA TITULARIDADE
+Fatura de Cartão,PAGTO FATURA CARTAO
+Fatura de Cartão,FATURA CARTAO CREDITO
+Fatura de Cartão,PAGAMENTO CARTAO DE CREDITO
+Fatura de Cartão,PAGAMENTO FATURA
+Fatura de Cartão,FATURA CARTAO
