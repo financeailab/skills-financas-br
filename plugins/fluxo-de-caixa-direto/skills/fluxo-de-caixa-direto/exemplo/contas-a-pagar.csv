@@ -1,0 +1,4 @@
+fornecedor;documento;vencimento;valor;status
+ABC Suprimentos;NF-3001;15/08/2026;4200,00;aberto
+Fornecedor Atrasado;NF-3002;10/07/2026;950,00;pendente
+Fornecedor Pago;NF-2999;01/07/2026;500,00;pago
