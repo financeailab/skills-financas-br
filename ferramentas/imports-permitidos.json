@@ -37,6 +37,11 @@
     "fluxo-de-caixa-direto": {
       "terceiros": ["openpyxl"],
       "internos": ["categorizador", "dfc", "export_xlsx", "ingest_erp", "ingest_ofx", "normalize", "recusa"]
+    },
+    "leitor-de-fatura-de-cartao": {
+      "stdlib": ["hashlib"],
+      "terceiros": ["openpyxl", "pdfplumber"],
+      "internos": ["bancos", "detector", "emit_csv", "emit_xlsx", "lote", "modelo", "normalize", "prova_total"]
     }
   },
   "excecoes": [
@@ -44,7 +49,9 @@
     {"arquivo": "conciliar.py", "funcao": "main", "import": "logging"},
     {"arquivo": "conciliar.py", "funcao": "main", "import": "warnings"},
     {"arquivo": "fluxo_caixa.py", "funcao": "main", "import": "logging"},
-    {"arquivo": "fluxo_caixa.py", "funcao": "main", "import": "warnings"}
+    {"arquivo": "fluxo_caixa.py", "funcao": "main", "import": "warnings"},
+    {"arquivo": "ler_fatura.py", "funcao": "main", "import": "logging"},
+    {"arquivo": "ler_fatura.py", "funcao": "main", "import": "warnings"}
   ],
   "programas": {
     "capturador-de-notas": {
