@@ -25,6 +25,11 @@
       "name": "fluxo-de-caixa-direto",
       "source": "./plugins/fluxo-de-caixa-direto",
       "description": "Cruza os extratos OFX com o contas a pagar e a receber do ERP (Omie ou CSV genérico) e devolve o fluxo de caixa direto: realizado por categoria e projeção de 13 semanas, com alertas."
+    },
+    {
+      "name": "leitor-de-fatura-de-cartao",
+      "source": "./plugins/leitor-de-fatura-de-cartao",
+      "description": "Lê o PDF da fatura do cartão corporativo e devolve cada lançamento em CSV e XLSX, com prova de que a soma fecha com o total impresso."
     }
   ]
 }
