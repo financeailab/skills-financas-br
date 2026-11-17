@@ -1,0 +1,16 @@
+[project]
+name = "leitor-fatura-cartao"
+version = "0.1.0"
+description = "Leitor de fatura de cartao corporativo BR (PDF -> CSV/XLSX) com prova de completude. O motor nao faz chamada de rede."
+requires-python = ">=3.12"
+# Runtime: pdfplumber (extracao nativa/posicional do PDF); openpyxl (XLSX branded).
+# reportlab gera os PDFs-fixture da suite.
+dependencies = ["pdfplumber>=0.11", "openpyxl>=3.1", "reportlab>=4"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+# OCR local da fatura ESCANEADA (F2, fora do escopo v1). Skip-safe sem os binarios.
+ocr = ["pytesseract>=0.3", "pypdfium2>=4", "Pillow>=10"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
