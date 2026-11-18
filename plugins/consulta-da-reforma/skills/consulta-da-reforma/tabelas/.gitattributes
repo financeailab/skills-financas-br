@@ -1,0 +1,6 @@
+# Copia byte a byte da Receita: o sha256 do MANIFESTO.json nao pode depender do fim de linha de quem clona
+*.sql -text
+# o exportador confere o sha256 destes tres na arvore de trabalho (scripts/d0/exportar.cjs)
+MANIFESTO.json -text
+LICENSE -text
+.gitattributes -text
