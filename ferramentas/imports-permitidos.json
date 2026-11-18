@@ -42,6 +42,11 @@
       "stdlib": ["hashlib"],
       "terceiros": ["openpyxl", "pdfplumber"],
       "internos": ["bancos", "detector", "emit_csv", "emit_xlsx", "lote", "modelo", "normalize", "prova_total"]
+    },
+    "consulta-da-reforma": {
+      "stdlib": ["hashlib", "sqlite3", "tempfile"],
+      "terceiros": [],
+      "internos": ["base", "consultas"]
     }
   },
   "excecoes": [
