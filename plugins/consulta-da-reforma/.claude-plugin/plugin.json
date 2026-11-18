@@ -1,0 +1,12 @@
+{
+  "name": "consulta-da-reforma",
+  "displayName": "Consulta da Reforma",
+  "version": "0.1.0",
+  "description": "Consulta as tabelas oficiais da reforma tributária (CBS, IBS e Imposto Seletivo) que a Receita Federal publicou no GitHub: cClassTrib, CST e redução, alíquota de referência, NCM e NBS com Imposto Seletivo, vínculo, Simples Nacional e busca por palavra, com a data da cópia em toda resposta. Consulta de tabela, não parecer tributário. Motor Python só com a biblioteca-padrão e sem chamada de rede; a entrada é o código digitado, e o pedido, a saída e a resposta vão para a Anthropic, como qualquer conversa.",
+  "author": {
+    "name": "Douglas Ferreira",
+    "url": "https://www.linkedin.com/in/douglasaf98"
+  },
+  "homepage": "https://financeailab.com.br/ferramentas/consulta-da-reforma/",
+  "license": "Apache-2.0"
+}
