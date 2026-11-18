@@ -16,6 +16,7 @@ Finanças Corporativas.
 | Leitor de Notas Fiscais | Lê NF-e e NFS-e de fornecedor (XML, PDF ou foto), confere com regras fiscais e gera a carga de contas a pagar (Omie, ContaAzul ou CSV genérico) | [`plugins/leitor-de-notas-fiscais`](plugins/leitor-de-notas-fiscais/README.md) |
 | Fluxo de Caixa Direto | Cruza os extratos OFX com o contas a pagar e a receber do ERP (Omie ou CSV genérico) e devolve o fluxo de caixa direto: realizado por categoria e projeção de 13 semanas, com alertas | [`plugins/fluxo-de-caixa-direto`](plugins/fluxo-de-caixa-direto/README.md) |
 | Leitor de Fatura de Cartão | Lê o PDF da fatura do cartão corporativo e devolve cada lançamento (data, estabelecimento, valor, parcela, portador, moeda) em CSV e XLSX, com prova de que a soma fecha com o total impresso | [`plugins/leitor-de-fatura-de-cartao`](plugins/leitor-de-fatura-de-cartao/README.md) |
+| Consulta da Reforma | Consulta as tabelas oficiais da reforma tributária (CBS, IBS e Imposto Seletivo) que a Receita Federal publicou no GitHub: cClassTrib, CST, redução, alíquota de referência, NCM e NBS, com a data da cópia em toda resposta. Consulta de tabela, não parecer | [`plugins/consulta-da-reforma`](plugins/consulta-da-reforma/README.md) |
 
 ## Como instalar
 
